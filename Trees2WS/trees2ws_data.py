@@ -34,7 +34,8 @@ def add_vars_to_workspace(_ws=None,_dataVars=None):
   _vars = od()
   for var in _dataVars:
     if var == "CMS_hgg_mass":
-      _vars[var] = ROOT.RooRealVar(var,var,125.,100.,180.)
+      #_vars[var] = ROOT.RooRealVar(var,var,125.,100.,180.)
+      _vars[var] = ROOT.RooRealVar(var,var,125.,110.,150.)
       _vars[var].setBins(160)
     elif var == "dZ":
       _vars[var] = ROOT.RooRealVar(var,var,0.,-20.,20.)
@@ -82,7 +83,8 @@ else:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # UPROOT file
 f = uproot.open(opt.inputTreeFile)
-listOfTreeNames = f[inputTreeDir].keys()
+if len(inputTreeDir)==0: listOfTreeNames = f.keys()
+else: listOfTreeNames = f[inputTreeDir].keys()
 # If cats = 'auto' then determine from list of trees
 if cats == 'auto':
   cats = []
@@ -116,7 +118,8 @@ aset = make_argset(ws,varNames)
 # Loop over categories and 
 for cat in cats:
   print " --> Extracting events from category: %s"%cat
-  treeName = "%s/Data_%s_%s"%(inputTreeDir,sqrts__,cat)
+  if len(inputTreeDir)==0: treeName = "Data_%s_%s"%(sqrts__,cat)
+  else: treeName = "%s/Data_%s_%s"%(inputTreeDir,sqrts__,cat)
   print "    * tree: %s"%treeName
   t = f.Get(treeName)
 

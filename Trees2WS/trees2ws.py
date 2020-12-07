@@ -52,7 +52,8 @@ def add_vars_to_workspace(_ws=None,_data=None,_stxsVar=None):
   for var in _data.columns:
     if var in ['type','cat',_stxsVar]: continue
     if var == "CMS_hgg_mass": 
-      _vars[var] = ROOT.RooRealVar(var,var,125.,100.,180.)
+      #_vars[var] = ROOT.RooRealVar(var,var,125.,100.,180.)
+      _vars[var] = ROOT.RooRealVar(var,var,125.,110.,150.)
       _vars[var].setBins(160)
     elif var == "dZ": 
       _vars[var] = ROOT.RooRealVar(var,var,0.,-20.,20.)
@@ -114,7 +115,8 @@ for ts, nWeights in theoryWeightContainers.iteritems(): theoryWeightColumns[ts] 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # UPROOT file
 f = uproot.open(opt.inputTreeFile)
-listOfTreeNames = f[inputTreeDir].keys()
+if len(inputTreeDir)==0: listOfTreeNames = f.keys()
+else: listOfTreeNames = f[inputTreeDir].keys()
 # If cats = 'auto' then determine from list of trees
 if cats == 'auto':
   cats = []
@@ -142,7 +144,8 @@ if opt.doSystematics: sdata = pandas.DataFrame()
 # Loop over categories: fill dataframe
 for cat in cats:
   print " --> Extracting events from category: %s"%cat
-  treeName = "%s/%s_%s_%s_%s"%(inputTreeDir,opt.productionMode,opt.inputMass,sqrts__,cat)
+  if len(inputTreeDir)==0: treeName = "%s_%s_%s_%s"%(opt.productionMode,opt.inputMass,sqrts__,cat)
+  else: treeName = "%s/%s_%s_%s_%s"%(inputTreeDir,opt.productionMode,opt.inputMass,sqrts__,cat)
   print "    * tree: %s"%treeName
   # Extract tree from uproot
   t = f[treeName]

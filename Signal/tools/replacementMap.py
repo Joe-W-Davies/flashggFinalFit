@@ -23,6 +23,28 @@ globalReplacementMap["example"]["catRVMap"] = od()
 globalReplacementMap["example"]["catRVMap"]["Untagged_Tag0"] = "Untagged_Tag0"
 globalReplacementMap["example"]["catRVMap"]["VBF_Tag0"] = "VBF_Tag0"
 
+# for Hee analysis (no WV events here)
+#NOTE: 
+#the way to read this, is for any general proc in a cat with not enough events to fit sig to,
+# replace this (proc_small, cat_small) with the diagonal process in that category (proc_targetted, purest_cat_targetting_proc), where you should read this as process X falling at cat Y = (X,Y)
+# so line 35 gives the replacement (diag) proc in gghcat0 and line 42 gives the category for that proc we should use i.e. replace with (ggh, gghcat0), if our small constribution was say (vbf, gghcat0),
+#in a nutshell: if any proc in a cat doesnt fill the min N-evt requirement, replace it with whatever that category is actually targetting (and the nth tag of that)
+
+
+globalReplacementMap['Hee'] = od()
+globalReplacementMap['Hee']['procRVMap'] = od()
+globalReplacementMap['Hee']['procRVMap']["gghcat0"] = "GG2H"
+globalReplacementMap['Hee']['procRVMap']["gghcat1"] = "GG2H"
+globalReplacementMap['Hee']['procRVMap']["gghcat2"] = "GG2H"
+globalReplacementMap['Hee']['procRVMap']["vbfcat0"] = "VBF"
+globalReplacementMap['Hee']['procRVMap']["vbfcat1"] = "VBF"
+
+globalReplacementMap['Hee']['catRVMap'] = od()
+globalReplacementMap['Hee']['catRVMap']["gghcat0"] = "gghcat0"
+globalReplacementMap['Hee']['catRVMap']["gghcat1"] = "gghcat1"
+globalReplacementMap['Hee']['catRVMap']["gghcat2"] = "gghcat2"
+globalReplacementMap['Hee']['catRVMap']["vbfcat0"] = "vbfcat0"
+globalReplacementMap['Hee']['catRVMap']["vbfcat1"] = "vbfcat1"
 
 # STXS analysis
 globalReplacementMap['STXS'] = od()

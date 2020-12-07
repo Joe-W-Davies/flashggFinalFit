@@ -203,6 +203,7 @@ else:
 
 # Repeat for WV scenario
 if not opt.skipVertexScenarioSplit:
+  print 'skip vertex scenario was false' 
   datasetWVForFit = od()
   for mp in opt.massPoints.split(","):
     WSFileName = glob.glob("%s/output*M%s*%s.root"%(opt.inputWSDir,mp,procWVFit))[0]

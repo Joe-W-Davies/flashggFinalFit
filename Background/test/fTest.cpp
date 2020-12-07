@@ -55,8 +55,12 @@ namespace po = program_options;
 
 bool BLIND = true;
 bool runFtestCheckWithToys=false;
-int mgg_low =100;
-int mgg_high =180;
+//adjust mass ranges for H->ee
+//int mgg_low =100;
+//int mgg_high =180;
+int mgg_low =110;
+int mgg_high =150;
+//int nBinsForMass = 4*(mgg_high-mgg_low);
 int nBinsForMass = 4*(mgg_high-mgg_low);
 
 RooRealVar *intLumi_ = new RooRealVar("IntLumi","hacked int lumi", 1000.);

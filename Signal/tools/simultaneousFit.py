@@ -40,7 +40,8 @@ pLUT['Frac']['p0'] = [0.25,0.01,0.99]
 pLUT['Frac']['p1'] = [0.,-0.05,0.05]
 pLUT['Frac']['p2'] = [0.,-0.0001,0.0001]
 pLUT['Gaussian'] = od()
-pLUT['Gaussian']['dm_p0'] = [0.1,-1.5,1.5]
+#pLUT['Gaussian']['dm_p0'] = [0.1,-1.5,1.5]
+pLUT['Gaussian']['dm_p0'] = [0.1,-5,5] #Hee skew gaussain
 pLUT['Gaussian']['dm_p1'] = [0.0,-0.01,0.01]
 pLUT['Gaussian']['dm_p2'] = [0.0,-0.01,0.01]
 pLUT['Gaussian']['sigma_p0'] = ['func',0.5,10.0]
@@ -52,6 +53,7 @@ pLUT['FracGaussian']['p1'] = [0.01,-0.005,0.005]
 pLUT['FracGaussian']['p2'] = [0.00001,-0.00001,0.00001]
 
 # Function to calc chi2 for binned fit given pdf, RooDataHist and xvar as inputs
+#def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False):
 def calcChi2(x,pdf,d,errorType="SumW2",_verbose=False):
   result = 0.
   k = 0. # number of non empty bins

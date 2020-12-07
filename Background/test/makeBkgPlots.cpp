@@ -649,8 +649,10 @@ void plotAllPdfs(RooRealVar *mgg, RooAbsData *data, RooMultiPdf *mpdf, RooCatego
 	plot->GetXaxis()->SetTitle("m_{#gamma#gamma} (GeV)");
 	plot->GetYaxis()->SetTitle("Events");
 	if (!unblind) {
-		mgg->setRange("unblind_up",135,180);
-		mgg->setRange("unblind_down",100,115);
+		//mgg->setRange("unblind_up",135,180);
+		mgg->setRange("unblind_up",135,150);
+		//mgg->setRange("unblind_down",100,115);
+		mgg->setRange("unblind_down",110,115);
 		data->plotOn(plot,Binning(80),CutRange("unblind_down,unblind_up"));
 	}
 	else {
