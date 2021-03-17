@@ -154,6 +154,7 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX , TString extraExtraText)
     if( iPosX==0) 
     {
       posX_ =   l +  relPosX*(1-l-r);
+      //posY_ =   1-t+lumiTextOffset*t+1;
       posY_ =   1-t+lumiTextOffset*t;
     }
     latex.SetTextFont(extraTextFont);

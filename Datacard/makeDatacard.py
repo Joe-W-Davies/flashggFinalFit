@@ -8,7 +8,7 @@ import ROOT
 import pandas as pd
 import glob
 import pickle
-from collections import OrderedDict
+from collections import OrderedDict as od
 from systematics import theory_systematics, experimental_systematics, signal_shape_systematics
 
 def get_options():
@@ -132,6 +132,7 @@ if opt.prune:
 
   else:
     print " --> Using nominal yield of process (sumEntries) for pruning"
+    print "data: {}".format(data)
     mask = (data['type']=='sig')
 
     # Extract per category yields

@@ -53,6 +53,7 @@ def getHistograms( _ws, _nominalDataName, _sname ):
   rds_nominal = _ws.data(_nominalDataName)
   rdh_up = _ws.data("%s_%sUp01sigma"%(_nominalDataName,_sname))
   rdh_down = _ws.data("%s_%sDown01sigma"%(_nominalDataName,_sname))
+  print 'DEBUG: syst name {}_{}Up01sigma'.format(_nominalDataName,_sname)
   # Check if not NONE type and fill histograms
   if rds_nominal: rds_nominal.fillHistogram(_hists['nominal'],ROOT.RooArgList(mgg))
   else:
@@ -73,6 +74,7 @@ def getHistograms( _ws, _nominalDataName, _sname ):
 def getMeanVar(_hists):
   mu, muVar = {}, {}
   for htype,h in _hists.iteritems(): mu[htype] = h.GetMean()
+  print 'DEBUG: mean for nom: {}, mean for up {}, mean for down {}'.format(mu['nominal'], mu['up'], mu['down'])
   if mu['nominal']==0: return 0
   for htype in ['up','down']: muVar[htype] = (mu[htype]-mu['nominal'])/mu['nominal']
   x = (abs(muVar['up'])+abs(muVar['down']))/2

@@ -1,9 +1,9 @@
 {
     "mu_inclusive":{
         "pois":"r",
-        "fits":"profile1D:syst:r",
+        "fits":"AsymptoticLimit:syst:r",
         "points":"20:1",
-        "fit_opts":"--setParameterRanges r=0,2 --saveSpecifiedNuis all"
+        "fit_opts":"--saveSpecifiedNuis all"
     },
 
     "mu":{

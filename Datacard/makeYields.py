@@ -205,7 +205,7 @@ if opt.doSystematics:
 totalSignalRows = float(data[data['type']=='sig'].shape[0])
 for ir,r in data[data['type']=='sig'].iterrows():
 
-  print " --> Extracting yields: (%s,%s) [%.1f%%]"%(r['proc'],r['cat'],100*(float(ir)/totalSignalRows))
+  print " --> Extracting yields: (%s,%s) [%.8f%%]"%(r['proc'],r['cat'],100*(float(ir)/totalSignalRows))
 
   # Open input WS file and extract workspace
   f_in = ROOT.TFile(r.inputWSFile)
@@ -229,7 +229,7 @@ for ir,r in data[data['type']=='sig'].iterrows():
       f_NNLOPS = abs(p.getRealValue("NNLOPSweight")) if "NNLOPSweight" in contents else 1.
       if f_COWCorr == 0: continue
       else: y_COWCorr += w*(f_NNLOPS/f_COWCorr)
-  print "(%-50s) y = %.5f, y_COWCorr = %.5f, sumw2 = %.5f"%(r['proc'],y,y_COWCorr,sumw2)
+  print "(%-50s) y = %.8f, y_COWCorr = %.8f, sumw2 = %.8f"%(r['proc'],y,y_COWCorr,sumw2)
   data.at[ir,'nominal_yield'] = y
   data.at[ir,'sumw2'] = sumw2
   if not opt.skipCOWCorr: data.at[ir,'nominal_yield_COWCorr'] = y_COWCorr

@@ -69,7 +69,7 @@ TRandom3 *RandomGen = new TRandom3();
 
 RooAbsPdf* getPdf(PdfModelBuilder &pdfsModel, string type, int order, const char* ext=""){
   
-  if (type=="Bernstein") return pdfsModel.getBernstein(Form("%s_bern%d",ext,order),order); 
+  if (type=="Bernstein") return pdfsModel.getBernstein(Form("%s_bern%d",ext,order),order);
   else if (type=="Chebychev") return pdfsModel.getChebychev(Form("%s_cheb%d",ext,order),order); 
   else if (type=="Exponential") return pdfsModel.getExponentialSingle(Form("%s_exp%d",ext,order),order); 
   else if (type=="PowerLaw") return pdfsModel.getPowerLawSingle(Form("%s_pow%d",ext,order),order); 
@@ -371,6 +371,7 @@ void plot(RooRealVar *mass, RooMultiPdf *pdfs, RooCategory *catIndex, RooDataSet
   TPad *pad1 = new TPad("pad1","pad1",0,0.25,1,1);
   TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.35);
   pad1->SetBottomMargin(0.18);
+  pad1->SetTopMargin(0.1); //FIXME
   pad2->SetTopMargin(0.00001);
   pad2->SetBottomMargin(0.25);
   pad1->Draw();
@@ -441,7 +442,9 @@ void plot(RooRealVar *mass, RooMultiPdf *pdfs, RooCategory *catIndex, RooDataSet
   hdummy->SetMinimum(hdatasub->GetHistogram()->GetMinimum()-1);
   hdummy->GetYaxis()->SetTitle("data - best fit PDF");
   hdummy->GetYaxis()->SetTitleSize(0.12);
-  hdummy->GetXaxis()->SetTitle("m_{#gamma#gamma} (GeV)");
+  //hdummy->GetXaxis()->SetTitle("m_{#gamma#gamma} (GeV)");
+  hdummy->GetXaxis()->SetTitle("m_{ee} (GeV)");
+  hdummy->GetXaxis()->SetTitleOffset(0.6);
   hdummy->GetXaxis()->SetTitleSize(0.12);
   hdummy->Draw("HIST");
   hdummy->GetYaxis()->SetNdivisions(808);
@@ -749,7 +752,7 @@ int main(int argc, char* argv[]){
         if( isFlashgg_ ){
           if( year_ == "all" ){ ext = "13TeV"; }
           //else{ ext = "13TeV"; } //FIXME 
-          else{ ext = Form("%s_13TeV",year_); }
+          else{ ext = Form("%s_13TeV",year_.c_str()); }
         }
 	//if (isFlashgg_) ext = "13TeV";
         //FIXME trying to remove duplicated names for 2016+2017 combination

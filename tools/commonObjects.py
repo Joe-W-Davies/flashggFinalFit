@@ -15,7 +15,8 @@ sqrts__ = "13TeV"
 
 # Luminosity map in fb^-1
 lumiMap = {'2016':35.92, '2017':41.53, '2018':59.74, 'combined':137.19}
-lumiScaleFactor = 1000. # Converting from pb to fb
+#lumiScaleFactor = 1000. # Converting from pb to fb
+lumiScaleFactor = 1. # Converting from pb to fb
 
 # Constants
 BR_W_lnu = 3.*10.86*0.01
@@ -30,7 +31,8 @@ decayMode = 'hgg'
 
 # flashgg input WS objects
 inputWSName__ = "tagsDumper/cms_hgg_13TeV"
-inputNuisanceExtMap = {'scales':'MCScale','scalesCorr':'','smears':'MCSmear'}
+#inputNuisanceExtMap = {'scales':'MCScale','scalesCorr':'','smears':'MCSmear'}
+inputNuisanceExtMap = {'scales':'','scalesCorr':'','smears':''}
 # Signal output WS objects
 outputWSName__ = "wsig"
 outputWSObjectTitle__ = "hggpdfsmrel"

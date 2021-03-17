@@ -113,16 +113,20 @@ RooAbsPdf* PdfModelBuilder::getBernstein(string prefix, int order){
   	return bern;
   } else if (order==3) {
 	RooBernsteinFast<3> *bern = new RooBernsteinFast<3>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return bern;
+  	return NULL;
+  	//return bern;
   } else if (order==4) {
 	RooBernsteinFast<4> *bern = new RooBernsteinFast<4>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return bern;
+  	return NULL;
+  	//return bern;
   } else if (order==5) {
 	RooBernsteinFast<5> *bern = new RooBernsteinFast<5>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return bern;
+  	return NULL;
+  	//return bern;
   } else if (order==6) {
 	RooBernsteinFast<6> *bern = new RooBernsteinFast<6>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return bern;
+  	return NULL;
+  	//return bern;
 //  } else if (order==7) {
 //	RooBernsteinFast<7> *bern = new RooBernsteinFast<7>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
  // 	return bern;

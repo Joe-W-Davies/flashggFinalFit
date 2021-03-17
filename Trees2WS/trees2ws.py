@@ -109,7 +109,8 @@ theoryWeightColumns = {}
 for ts, nWeights in theoryWeightContainers.iteritems(): theoryWeightColumns[ts] = ["%s_%g"%(ts[:-1],i) for i in range(0,nWeights)] # drop final s from container name
 
 # If year == 2018, add HET
-if opt.year == '2018': systematics.append("JetHEM")
+#FIXME: add HEM back in when we have it dumped for 2018 signal
+#if opt.year == '2018': systematics.append("JetHEM")
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -246,7 +247,8 @@ for stxsId in data[stxsVar].unique():
     
   else:
     df = data
-    if opt.doSystematics: sdf = df
+    #if opt.doSystematics: sdf = df #previous typo
+    if opt.doSystematics: sdf = sdata
 
     # Define output workspace file
     outputWSDir = "/".join(opt.inputTreeFile.split("/")[:-1])+"/ws_%s"%dataToProc(opt.productionMode)
@@ -293,9 +295,10 @@ for stxsId in data[stxsVar].unique():
       for s in systematics:
         for direction in ['Up','Down']:
           # Create mask for systematic variation
-          mask = (sdf['type']=='%s%s'%(s,direction))&(sdf['cat']==cat)
+          mask = (sdf['type']=='%s%s'%(s,direction))&(sdf['cat']==cat) #FIXME: removes all events!
           # Convert dataframe to structured array, then to ROOT tree
           sa = sdf[mask].to_records()
+          #print 'DEBUG: sa:',sa
           t = array2tree(sa)
           
           # Define RooDataHist
