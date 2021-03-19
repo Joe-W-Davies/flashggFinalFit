@@ -69,11 +69,14 @@ TRandom3 *RandomGen = new TRandom3();
 
 RooAbsPdf* getPdf(PdfModelBuilder &pdfsModel, string type, int order, const char* ext=""){
   
+  //if ((type=="Bernstein") && (order!=1)) return pdfsModel.getBernstein(Form("%s_bern%d",ext,order),order);
   if (type=="Bernstein") return pdfsModel.getBernstein(Form("%s_bern%d",ext,order),order);
   else if (type=="Chebychev") return pdfsModel.getChebychev(Form("%s_cheb%d",ext,order),order); 
   else if (type=="Exponential") return pdfsModel.getExponentialSingle(Form("%s_exp%d",ext,order),order); 
   else if (type=="PowerLaw") return pdfsModel.getPowerLawSingle(Form("%s_pow%d",ext,order),order); 
   else if (type=="Laurent") return pdfsModel.getLaurentSeries(Form("%s_lau%d",ext,order),order); 
+  else if (type=="BWZ") return pdfsModel.getBWZ(Form("%s_bwz%d",ext,order),order);  //dont actually need order here
+  else if (type=="BWZRedux") return pdfsModel.getBWZRedux(Form("%s_bwzredux%d",ext,order),order);  //dont actually need order here
   else {
     cerr << "[ERROR] -- getPdf() -- type " << type << " not recognised." << endl;
     return NULL;
@@ -251,6 +254,7 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
   // The first thing is to check if the number of entries in any bin is < 5 
   // if so, we don't rely on asymptotic approximations
  
+  //if ((double)data->sumEntries()/nBinsForMass < 1 ){ bound not sensible, just trying to abouv GOF from toys is always ~0...
   if ((double)data->sumEntries()/nBinsForMass < 5 ){
 
     std::cout << "[INFO] Running toys for GOF test " << std::endl;
@@ -341,6 +345,7 @@ void plot(RooRealVar *mass, RooAbsPdf *pdf, RooDataSet *data, string name,vector
   lat->SetTextFont(42);
   lat->DrawLatex(0.1,0.92,Form("#chi^{2} = %.3f, Prob = %.2f, Fit Status = %d ",chi2*(nBinsForMass-np),*prob,status));
   canv->SaveAs(name.c_str());
+  cout << "finished plotting mass" << endl;
  	
 	//plot_chi2->Draw();
   //canv->SaveAs((name+"debug").c_str());
@@ -724,11 +729,15 @@ int main(int argc, char* argv[]){
 	functionClasses.push_back("Exponential");
 	functionClasses.push_back("PowerLaw");
 	functionClasses.push_back("Laurent");
+	functionClasses.push_back("BWZ");
+	functionClasses.push_back("BWZRedux");
 	map<string,string> namingMap;
 	namingMap.insert(pair<string,string>("Bernstein","pol"));
 	namingMap.insert(pair<string,string>("Exponential","exp"));
 	namingMap.insert(pair<string,string>("PowerLaw","pow"));
 	namingMap.insert(pair<string,string>("Laurent","lau"));
+	namingMap.insert(pair<string,string>("BWZ","bwz"));
+	namingMap.insert(pair<string,string>("BWZRedux","bwzredux"));
 
 	// store results here
 
@@ -743,6 +752,7 @@ int main(int argc, char* argv[]){
 	RooRealVar *mass = (RooRealVar*)inWS->var("CMS_hgg_mass");
 	std:: cout << "[INFO] Got mass from ws " << mass << std::endl;
 	pdfsModel.setObsVar(mass);
+	//double upperEnvThreshold = 0.1; // upper threshold on delta(chi2) to include function in envelope (looser than truth function)
 	double upperEnvThreshold = 0.1; // upper threshold on delta(chi2) to include function in envelope (looser than truth function)
 
 	fprintf(resFile,"Truth Model & d.o.f & $\\Delta NLL_{N+1}$ & $p(\\chi^{2}>\\chi^{2}_{(N\\rightarrow N+1)})$ \\\\\n");
@@ -859,9 +869,12 @@ int main(int argc, char* argv[]){
 					}
 					double gofProb=0;
 					// otherwise we get it later ...
-					if (!saveMultiPdf) plot(mass,bkgPdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,(cat+catOffset)),flashggCats_,fitStatus,&gofProb);
 					cout << "[INFO]\t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << endl;
+                                        cout << "about to do first plot" <<endl;
+					if (!saveMultiPdf) plot(mass,bkgPdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,(cat+catOffset)),flashggCats_,fitStatus,&gofProb);
+					//cout << "[INFO]\t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << endl;
 					//fprintf(resFile,"%15s && %d && %10.2f && %10.2f && %10.2f \\\\\n",funcType->c_str(),order,thisNll,chi2,prob);
+					//FIXME: for no bern 1, ony bern 2: in first iter the cache_pdf none->none, in second
 					prevNll=thisNll;
 					cache_order=prev_order;
 					cache_pdf=prev_pdf;
@@ -872,8 +885,14 @@ int main(int argc, char* argv[]){
 				counter++;
 			}
 
+                        if (!cache_pdf){
+			    cache_order=prev_order;
+			    cache_pdf=prev_pdf;
+                        }
+
 			fprintf(resFile,"%15s & %d & %5.2f & %5.2f \\\\\n",funcType->c_str(),cache_order+1,chi2,prob);
 			choices.insert(pair<string,int>(*funcType,cache_order));
+                        cout << "inserting pdf:" << Form("%s%d",funcType->c_str(),cache_order) << " which looks like: " << cache_pdf << endl;
 			pdfs.insert(pair<string,RooAbsPdf*>(Form("%s%d",funcType->c_str(),cache_order),cache_pdf));
 
 			int truthOrder = cache_order;
@@ -892,13 +911,18 @@ int main(int argc, char* argv[]){
 
 				while (prob<upperEnvThreshold){
 					RooAbsPdf *bkgPdf = getPdf(pdfsModel,*funcType,order,Form("env_pdf_%d_%s",(cat+catOffset),ext.c_str()));
+			                std::cout << "considering PDF: " << *funcType << ", order of PDF: " << order << std::endl;
+                                        std::cout << "bkgPdf looks like: " << bkgPdf << std::endl;
 					if (!bkgPdf ){
 						// assume this order is not allowed
+						std::cout << "Name of NOT allowed PDF: " << *funcType << ", order of PDF: " << order << std::endl;
+                                                //if ((*funcType=="BWZ") or (*funcType=="BWZRedux")) break; //no "order" of BWs
 						if (order >6) { std::cout << " [WARNING] could not add ] " << std::endl; break ;}
 						order++;
 					}
 					else {
 						//RooFitResult *fitRes;
+						std::cout << "Name of ALLOWED PDF: " << *funcType << ", order of PDF: " << order << std::endl;
 						int fitStatus=0;
 						runFit(bkgPdf,data,&thisNll,&fitStatus,/*max iterations*/3);//bkgPdf->fitTo(*data,Save(true),RooFit::Minimizer("Minuit2","minimize"));
 						//thisNll = fitRes->minNll();
@@ -916,10 +940,12 @@ int main(int argc, char* argv[]){
 						// Calculate goodness of fit for the thing to be included (will use toys for lowstats)!
 						double gofProb =0; 
 						plot(mass,bkgPdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,(cat+catOffset)),flashggCats_,fitStatus,&gofProb);
-
+                                                cout << "PROB:" << prob << endl;
+                                                cout << "GOF PROB:" << gofProb << endl;
 						if ((prob < upperEnvThreshold) ) { // Looser requirements for the envelope
 
-							if (gofProb > 0.01 || order == truthOrder ) {  // Good looking fit or one of our regular truth functions
+							//if (gofProb > 0.01 || order == truthOrder ) {  // Good looking fit or one of our regular truth functions 
+							if (gofProb > 0.01) {  // removed requirement to have at least 1 function from each family
 
 								std::cout << "[INFO] Adding to Envelope " << bkgPdf->GetName() << " "<< gofProb 
 									<< " 2xNLL + c is " << myNll + bkgPdf->getVariables()->getSize() <<  std::endl;
@@ -935,6 +961,7 @@ int main(int argc, char* argv[]){
 							}
 						}
 
+                                                cout << "updating PDFs and order" << endl;
 						prev_order=order;
 						prev_pdf=bkgPdf;
 						order++;
@@ -946,11 +973,13 @@ int main(int argc, char* argv[]){
 			}
 		}
 
+
 		fprintf(resFile,"\\hline\n");
 		choices_vec.push_back(choices);
 		choices_envelope_vec.push_back(choices_envelope);
 		pdfs_vec.push_back(pdfs);
 
+                cout << "doing final plot" << endl;
 		plot(mass,pdfs,data,Form("%s/truths_cat%d",outDir.c_str(),(cat+catOffset)),flashggCats_,cat);
 
 		if (saveMultiPdf){
@@ -976,6 +1005,7 @@ int main(int argc, char* argv[]){
 			catIndex.setIndex(bestFitPdfIndex);
 			std::cout << "// ------------------------------------------------------------------------- //" <<std::endl; 
 			std::cout << "[INFO] Created MultiPdf " << pdf->GetName() << ", in Category " << cat << " with a total of " << catIndex.numTypes() << " pdfs"<< std::endl;
+                        cout << "about to print stored pdfs..." << endl;
 			storedPdfs.Print();
 			std::cout << "[INFO] Best Fit Pdf = " << bestFitPdfIndex << ", " << storedPdfs.at(bestFitPdfIndex)->GetName() << std::endl;
 			std::cout << "// ------------------------------------------------------------------------- //" <<std::endl;

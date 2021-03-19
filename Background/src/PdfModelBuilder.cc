@@ -45,6 +45,8 @@ PdfModelBuilder::PdfModelBuilder():
   recognisedPdfTypes.push_back("Exponential");
   recognisedPdfTypes.push_back("PowerLaw");
   recognisedPdfTypes.push_back("Laurent");
+  recognisedPdfTypes.push_back("BWZ"); //adding for Hee
+  recognisedPdfTypes.push_back("BWZRedux"); //adding for Hee
   recognisedPdfTypes.push_back("KeysPdf");
   recognisedPdfTypes.push_back("File");
 
@@ -107,18 +109,19 @@ RooAbsPdf* PdfModelBuilder::getBernstein(string prefix, int order){
   //RooBernstein *bern = new RooBernstein(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
   if (order==1) {
 	RooBernsteinFast<1> *bern = new RooBernsteinFast<1>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return bern;
+  	return NULL; //removed since straight line isnt sensible fit
+  	//return bern;
   } else if (order==2) {
 	RooBernsteinFast<2> *bern = new RooBernsteinFast<2>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
   	return bern;
   } else if (order==3) {
 	RooBernsteinFast<3> *bern = new RooBernsteinFast<3>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return NULL;
-  	//return bern;
+  	return NULL; //removed since bern3 and above have turning points
+  	//return bern; 
   } else if (order==4) {
 	RooBernsteinFast<4> *bern = new RooBernsteinFast<4>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
   	return NULL;
-  	//return bern;
+        //return bern;
   } else if (order==5) {
 	RooBernsteinFast<5> *bern = new RooBernsteinFast<5>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
   	return NULL;
@@ -298,6 +301,91 @@ RooAbsPdf* PdfModelBuilder::getLaurentSeries(string prefix, int order){
   //bkgPdfs.insert(pair<string,RooAbsPdf*>(pdf->GetName(),pdf));
 }
 
+RooAbsPdf* PdfModelBuilder::getBWZ(string prefix, int order){
+  
+  //FIXME do we need "order" here? dont think so since "a" is just a coeff 
+  if (order>1) return NULL;
+  RooConstVar *Zwidth =  new RooConstVar("Zwidth", "Zwidth", 2.50);
+  RooConstVar *Zmass =  new RooConstVar("Zmass", "Zmass", 91.19);
+
+  //FIXME: is obs_var = dielectron mass? yep
+  RooArgList *dependents = new RooArgList(); 
+  dependents->add(*obs_var);
+
+  //FIXME: might need to change these bounds for exponent coeff 
+  double coeff1_start = -1;
+  double coeff1_low = -5;
+  double coeff1_high = 1;
+
+  RooRealVar *coeff1 = new RooRealVar("BWZ_exponent","BWZ_exponent", coeff1_start, coeff1_low, coeff1_high);
+  dependents->add(*coeff1);
+  dependents->add(*Zwidth);
+  dependents->add(*Zmass);
+
+  //depends has order: [dielec_mass, BWZ_exp_const, Zwidth, Zmass]
+  string formula="";
+  formula += "(@2*TMath::Exp(@1*@0))"; 
+  formula += "/";
+  formula +="(TMath::Power((@0-@3),2)+TMath::Power((@3/2),2))";
+
+  RooGenericPdf *BWZ = new RooGenericPdf(prefix.c_str(), prefix.c_str(), formula.c_str(), *dependents);
+  
+  cout << "BWZ formula looks like:" ;
+  BWZ->dumpFormula();
+
+  //bkgPdfs.insert(pair<string,RooAbsPdf*>(BWZ->GetName(),BWZ));?
+  return BWZ;
+
+}
+
+RooAbsPdf* PdfModelBuilder::getBWZRedux(string prefix, int order){
+  
+  if (order>1) return NULL;
+  RooConstVar *Zwidth =  new RooConstVar("Zwidth", "Zwidth", 2.50);
+  RooConstVar *Zmass =  new RooConstVar("Zmass", "Zmass", 91.19);
+
+  //FIXME: is obs_var = dielectron mass? yep
+  RooArgList *dependents = new RooArgList(); 
+  dependents->add(*obs_var);
+
+  //FIXME: might need to change these bounds for exponent coeff 
+  double coeff1_start = -1;
+  double coeff1_low = -5;
+  double coeff1_high = 2;
+
+  double coeff2_start = -1;
+  double coeff2_low = -5;
+  double coeff2_high = 2;
+
+  double coeff3_start = 2;
+  double coeff3_low = 1;
+  double coeff3_high = 3;
+
+  RooRealVar *coeff1 = new RooRealVar("BWZ_exp1","BWZ_exp1", coeff1_start, coeff1_low, coeff1_high);
+  RooRealVar *coeff2 = new RooRealVar("BWZ_exp2","BWZ_exp2", coeff2_start, coeff2_low, coeff2_high);
+  RooRealVar *coeff3 = new RooRealVar("BWZ_denom_pow","BWZ_denom_pow", coeff3_start, coeff3_low, coeff3_high);
+
+  dependents->add(*coeff1);
+  dependents->add(*coeff2);
+  dependents->add(*coeff3);
+
+  dependents->add(*Zwidth);
+  dependents->add(*Zmass);
+
+  //depends has order: [dielec_mass, BWZ_exp1, BWZ_exp2, BWZ_denom_pow, Zwidth, Zmass]
+  string formula="";
+  formula += "(@4*TMath::Exp((@1*@0)+(@2*@0)))"; 
+  formula += "/";
+  formula +="(TMath::Power((@0-@5),@3)+TMath::Power((@4/2),2))";
+
+  RooGenericPdf *BWZRedux = new RooGenericPdf(prefix.c_str(), prefix.c_str(), formula.c_str(), *dependents);
+  
+  //bkgPdfs.insert(pair<string,RooAbsPdf*>(BWZ->GetName(),BWZ));?
+  return BWZRedux;
+
+}
+
+
 RooAbsPdf* PdfModelBuilder::getKeysPdf(string prefix){
   if (!keysPdfAttributesSet){
     cerr << "ERROR -- keysPdf attributes not set" << endl;
@@ -392,6 +480,8 @@ void PdfModelBuilder::addBkgPdf(string type, int nParams, string name, bool cach
   if (type=="Exponential") pdf = getExponentialSingle(name,nParams);
   if (type=="PowerLaw") pdf = getPowerLawSingle(name,nParams);
   if (type=="Laurent") pdf = getLaurentSeries(name,nParams);
+  if (type=="BWZ") pdf = getBWZ(name,nParams);
+  if (type=="BWZRedux") pdf = getBWZ(name,nParams);
   if (type=="KeysPdf") pdf = getKeysPdf(name);
   if (type=="File") pdf = getPdfFromFile(name);
 
