@@ -249,13 +249,14 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
   int np = pdf->getParameters(*data)->getSize();
 
   double chi2 = plot_chi2->chiSquare("pdf","data",np);
+  std::cout << "Chi2 between bkg pdf and data: " << chi2 <<std::endl;
   std::cout << "[INFO] Calculating GOF for pdf " << pdf->GetName() << ", using " <<np << " fitted parameters" <<std::endl;
 
   // The first thing is to check if the number of entries in any bin is < 5 
   // if so, we don't rely on asymptotic approximations
  
-  //if ((double)data->sumEntries()/nBinsForMass < 1 ){ bound not sensible, just trying to abouv GOF from toys is always ~0...
-  if ((double)data->sumEntries()/nBinsForMass < 5 ){
+  //if ((double)data->sumEntries()/nBinsForMass < 5 ){
+  if ((double)data->sumEntries()/nBinsForMass < 1 ){ //trying to avoid GOF from toys since its always small
 
     std::cout << "[INFO] Running toys for GOF test " << std::endl;
     // store pre-fit params 
@@ -305,6 +306,8 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
   } else {
     prob = TMath::Prob(chi2*(nBinsForMass-np),nBinsForMass-np);
   }
+  std::cout << "nBins for mass:   " << nBinsForMass << std::endl;
+  std::cout << "number of params: " << np << std::endl;
   std::cout << "[INFO] Chi2 in Observed =  " << chi2*(nBinsForMass-np) << std::endl;
   std::cout << "[INFO] p-value  =  " << prob << std::endl;
   delete pdf;
@@ -870,7 +873,6 @@ int main(int argc, char* argv[]){
 					double gofProb=0;
 					// otherwise we get it later ...
 					cout << "[INFO]\t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << endl;
-                                        cout << "about to do first plot" <<endl;
 					if (!saveMultiPdf) plot(mass,bkgPdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,(cat+catOffset)),flashggCats_,fitStatus,&gofProb);
 					//cout << "[INFO]\t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << endl;
 					//fprintf(resFile,"%15s && %d && %10.2f && %10.2f && %10.2f \\\\\n",funcType->c_str(),order,thisNll,chi2,prob);
@@ -911,9 +913,12 @@ int main(int argc, char* argv[]){
 
 				while (prob<upperEnvThreshold){
 					RooAbsPdf *bkgPdf = getPdf(pdfsModel,*funcType,order,Form("env_pdf_%d_%s",(cat+catOffset),ext.c_str()));
-			                std::cout << "considering PDF: " << *funcType << ", order of PDF: " << order << std::endl;
-                                        std::cout << "bkgPdf looks like: " << bkgPdf << std::endl;
-					if (!bkgPdf ){
+			                std::cout << "considering PDF: " << *funcType << ", order of PDF: " << order << " for cat: " << cat << std::endl;
+
+                                        bool my_bad_fns = (catOffset==3 && *funcType=="Bernstein" && order==4); //Joe: temp fix to remove fn with TP in VBF cat 0
+                                        cout << "category bool is: " << my_bad_fns << endl;
+
+					if (!bkgPdf || my_bad_fns){
 						// assume this order is not allowed
 						std::cout << "Name of NOT allowed PDF: " << *funcType << ", order of PDF: " << order << std::endl;
                                                 //if ((*funcType=="BWZ") or (*funcType=="BWZRedux")) break; //no "order" of BWs
@@ -929,7 +934,9 @@ int main(int argc, char* argv[]){
 						if (fitStatus!=0) std::cout << "[WARNING] Warning -- Fit status for " << bkgPdf->GetName() << " at " << fitStatus <<std::endl;
 						double myNll = 2.*thisNll;
 						chi2 = 2.*(prevNll-thisNll);
-						if (chi2<0. && order>1) chi2=0.;
+						//if (chi2<0. && order>1) chi2=0.; //JOE: fails if first fn in family is not needed e.g. Bern 1
+						if (chi2<0. && order>1 && (prev_order != 0) ) chi2=0.; // JOE: && prev function was not a disallowed order 1 funtion e.g. comparing bern2 to bern1(NULL)
+                                                cout << "prev order is: " << prev_order << endl;
 						prob = TMath::Prob(chi2,order-prev_order);
 
 						cout << "[INFO] \t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << endl;
@@ -940,12 +947,17 @@ int main(int argc, char* argv[]){
 						// Calculate goodness of fit for the thing to be included (will use toys for lowstats)!
 						double gofProb =0; 
 						plot(mass,bkgPdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,(cat+catOffset)),flashggCats_,fitStatus,&gofProb);
-                                                cout << "PROB:" << prob << endl;
-                                                cout << "GOF PROB:" << gofProb << endl;
+                                                //cout << "\n\n Function name: " << *funcType << endl;
+                                                //cout << "cat: " << cat << endl;
+                                                //cout << "catoffset : " << catOffset << endl;
+                                                //cout << "PROB:" << prob << endl;
+                                                //cout << "GOF PROB:" << gofProb << endl;
+                                                //cout << "\n\n" << endl;
 						if ((prob < upperEnvThreshold) ) { // Looser requirements for the envelope
 
 							//if (gofProb > 0.01 || order == truthOrder ) {  // Good looking fit or one of our regular truth functions 
-							if (gofProb > 0.01) {  // removed requirement to have at least 1 function from each family
+							if (gofProb > 0.01) {  // Joe: removed requirement to have at least 1 function from each family
+							//if ((gofProb > 0.01) || (*funcType=="BWZ") || (*funcType=="BWZRedux")){  // Joe: removed requirement to have at least 1 function from each family, EXCEPT for BWs
 
 								std::cout << "[INFO] Adding to Envelope " << bkgPdf->GetName() << " "<< gofProb 
 									<< " 2xNLL + c is " << myNll + bkgPdf->getVariables()->getSize() <<  std::endl;
@@ -997,6 +1009,9 @@ int main(int argc, char* argv[]){
 			}
 			RooCategory catIndex(catindexname.c_str(),"c");
 			RooMultiPdf *pdf = new RooMultiPdf(Form("CMS_hgg_%s_%s_bkgshape",catname.c_str(),ext.c_str()),"all pdfs",catIndex,storedPdfs);
+                        //JOE:
+                        //pdf->setCorrectionFactor(0.25);
+                        pdf->setCorrectionFactor(0.05);
 			//RooRealVar nBackground(Form("CMS_hgg_%s_%s_bkgshape_norm",catname.c_str(),ext.c_str()),"nbkg",data->sumEntries(),0,10E8);
 			RooRealVar nBackground(Form("CMS_hgg_%s_%s_bkgshape_norm",catname.c_str(),ext.c_str()),"nbkg",data->sumEntries(),0,3*data->sumEntries());
 			//nBackground.removeRange(); // bug in roofit will break combine until dev branch brought in

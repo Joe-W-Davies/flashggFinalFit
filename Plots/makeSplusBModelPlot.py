@@ -45,7 +45,7 @@ def get_options():
   parser.add_option("--parameterMap", dest="parameterMap", default=None, help="Comma separated pairs of model parameters:values,...")
   parser.add_option("--ext", dest="ext", default='', help="Extension for saving")
   parser.add_option("--mass", dest="mass", default=None, help="Higgs mass")
-  parser.add_option("--xvar", dest="xvar", default="CMS_hgg_mass,m_{#gamma#gamma},GeV", help="X-variable: name,title,units")
+  parser.add_option("--xvar", dest="xvar", default="CMS_hgg_mass,m_{ee},GeV", help="X-variable: name,title,units")
   parser.add_option("--nBins", dest="nBins", default=80, type='int', help="Number of bins")
   parser.add_option("--pdfNBins", dest="pdfNBins", default=3200, type='int', help="Number of bins")
   parser.add_option("--translateCats", dest="translateCats", default=None, help="JSON to store cat translations")
@@ -70,7 +70,9 @@ if opt.inputWSFile is not None:
       print " --> [WARNING] Already loaded snapshot. Also setting parameters from opt.parameterMap"
     for kv in opt.parameterMap.split(","):
       k, v = kv.split(":")[0], kv.split(":")[1]
+      w.var(k).setRange(1,float(v))
       w.var(k).setVal(float(v))
+      print 'DEBUG: R is: {}'.format(w.var('r').getVal())
 
 # Define blinding region
 blindingRegion = [float(opt.blindingRegion.split(",")[0]),float(opt.blindingRegion.split(",")[1])]

@@ -201,11 +201,12 @@ def makeSplusBPlot(workspace,hD,hSB,hB,hS,hDr,hBr,hSr,cat,options,dB=None,reduce
   lat0.SetTextAlign(11)
   lat0.SetNDC()
   lat0.SetTextSize(0.06)
-  lat0.DrawLatex(0.12,0.92,"#bf{CMS} #it{Preliminary}")
+  lat0.DrawLatex(0.12,0.92,"#bf{CMS} #it{Work in progress}")
   #lat0.DrawLatex(0.12,0.92,"#bf{CMS}")
   lat0.DrawLatex(0.6,0.92,"137 fb^{-1} (13 TeV)")
   lat0.DrawLatex(0.6,0.8,"#scale[0.75]{%s}"%Translate(cat,translateCats))
-  lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrow#gamma#gamma}")
+  #lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrow#gamma#gamma}")
+  lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrowee}")
   #lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrow#gamma#gamma, m_{H} = 125.38 GeV}")
   if(options.loadSnapshot is not None):
     lat0.DrawLatex(0.15,0.77,"#scale[0.5]{(#hat{#mu}_{ggH},#hat{#mu}_{VBF},#hat{#mu}_{VH},#hat{#mu}_{top}) = (0.98,1.15,0.71,1.40)}")
@@ -221,7 +222,10 @@ def makeSplusBPlot(workspace,hD,hSB,hB,hS,hDr,hBr,hSr,cat,options,dB=None,reduce
   #    poiStr += ' %s = %.1f,'%(Translate(k,translatePOIs),float(v))
   #  poiStr = poiStr[:-1]
   #  lat0.DrawLatex(0.13,0.77,"#scale[0.75]{%s}"%poiStr)
-  else: lat0.DrawLatex(0.15,0.77,"#scale[0.75]{m_{H} = 125.0 GeV, #mu = 1.0}")
+  #else: lat0.DrawLatex(0.15,0.77,"#scale[0.75]{m_{H} = 125.0 GeV, #mu = 1.0}")
+  else:
+      lat0.DrawLatex(0.15,0.77,"#scale[0.75]{m_{H} = 125.0 GeV}")
+      lat0.DrawLatex(0.15,0.71,"#scale[0.75]{#mu = 10^{5} x SM}")
   # Ratio plot
   pad2.cd()
   h_axes_ratio = hDr.Clone()

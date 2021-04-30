@@ -100,7 +100,9 @@ RooAbsPdf* PdfModelBuilder::getBernstein(string prefix, int order){
   for (int i=0; i<order; i++){
     string name = Form("%s_p%d",prefix.c_str(),i);
     //params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),1.0,0.,5.)));
-    RooRealVar *param = new RooRealVar(name.c_str(),name.c_str(),0.1*(i+1),-15.,15.);
+    //RooRealVar *param = new RooRealVar(name.c_str(),name.c_str(),0.1*(i+1),-15.,15.);
+    // JOE made this a bit wider ranhe
+    RooRealVar *param = new RooRealVar(name.c_str(),name.c_str(),0.1*(i+1),-25.,25.);
     RooFormulaVar *form = new RooFormulaVar(Form("%s_sq",name.c_str()),Form("%s_sq",name.c_str()),"@0*@0",RooArgList(*param));
     params.insert(pair<string,RooRealVar*>(name,param));
     prods.insert(pair<string,RooFormulaVar*>(name,form));
@@ -116,20 +118,20 @@ RooAbsPdf* PdfModelBuilder::getBernstein(string prefix, int order){
   	return bern;
   } else if (order==3) {
 	RooBernsteinFast<3> *bern = new RooBernsteinFast<3>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return NULL; //removed since bern3 and above have turning points
+  	return NULL; //FIXME: removed since bern3 and above have turning points
   	//return bern; 
   } else if (order==4) {
 	RooBernsteinFast<4> *bern = new RooBernsteinFast<4>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return NULL;
-        //return bern;
+  	//return NULL;
+        return bern;
   } else if (order==5) {
 	RooBernsteinFast<5> *bern = new RooBernsteinFast<5>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return NULL;
-  	//return bern;
+  	//return NULL;
+  	return bern;
   } else if (order==6) {
 	RooBernsteinFast<6> *bern = new RooBernsteinFast<6>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
-  	return NULL;
-  	//return bern;
+  	//return NULL;
+  	return bern;
 //  } else if (order==7) {
 //	RooBernsteinFast<7> *bern = new RooBernsteinFast<7>(prefix.c_str(),prefix.c_str(),*obs_var,*coeffList);
  // 	return bern;
@@ -308,30 +310,37 @@ RooAbsPdf* PdfModelBuilder::getBWZ(string prefix, int order){
   RooConstVar *Zwidth =  new RooConstVar("Zwidth", "Zwidth", 2.50);
   RooConstVar *Zmass =  new RooConstVar("Zmass", "Zmass", 91.19);
 
-  //FIXME: is obs_var = dielectron mass? yep
   RooArgList *dependents = new RooArgList(); 
   dependents->add(*obs_var);
 
   //FIXME: might need to change these bounds for exponent coeff 
-  double coeff1_start = -1;
-  double coeff1_low = -5;
-  double coeff1_high = 1;
+  //double coeff1_start = -1;
+  //double coeff1_low = -5;
+  //double coeff1_high = 2;
+  
+  double coeff1_start = 0;
+  double coeff1_low   = -10;
+  double coeff1_high  =  10;
 
-  RooRealVar *coeff1 = new RooRealVar("BWZ_exponent","BWZ_exponent", coeff1_start, coeff1_low, coeff1_high);
+
+  //string pname =  Form("%s_pow0",prefix.c_str());
+  RooRealVar *coeff1 = new RooRealVar(Form("%s_BWZ_exponent",prefix.c_str()),Form("%s_BWZ_exponent",prefix.c_str()), coeff1_start, coeff1_low, coeff1_high);
   dependents->add(*coeff1);
   dependents->add(*Zwidth);
   dependents->add(*Zmass);
 
   //depends has order: [dielec_mass, BWZ_exp_const, Zwidth, Zmass]
   string formula="";
+  //formula += "(@2*TMath::Exp(0.1*@1*@0))"; 
   formula += "(@2*TMath::Exp(@1*@0))"; 
   formula += "/";
-  formula +="(TMath::Power((@0-@3),2)+TMath::Power((@3/2),2))";
+  formula +="(TMath::Power((@0-@3),2)+TMath::Power((@2/2),2))";
 
   RooGenericPdf *BWZ = new RooGenericPdf(prefix.c_str(), prefix.c_str(), formula.c_str(), *dependents);
+  //RooAbsPdf *BWZ = new RooAbsPdf(prefix.c_str(), prefix.c_str(), formula.c_str(), *dependents);
   
-  cout << "BWZ formula looks like:" ;
-  BWZ->dumpFormula();
+  //cout << "BWZ formula looks like:" ;
+  //BWZ->dumpFormula();
 
   //bkgPdfs.insert(pair<string,RooAbsPdf*>(BWZ->GetName(),BWZ));?
   return BWZ;
@@ -349,21 +358,46 @@ RooAbsPdf* PdfModelBuilder::getBWZRedux(string prefix, int order){
   dependents->add(*obs_var);
 
   //FIXME: might need to change these bounds for exponent coeff 
+  //double coeff1_start = -1;
+  //double coeff1_low = -5;
+  //double coeff1_high = 2;
+
+  //double coeff2_start = 0;
+  //double coeff2_low = -5;
+  //double coeff2_high = 2;
+
+  //double coeff3_start = 2;
+  //double coeff3_low = 1;
+  //double coeff3_high = 3;
+  
+  // acceptable bias with current below, with 0.05 complexity penalty
+  //double coeff1_start = -1;
+  //double coeff1_low = -5;
+  //double coeff1_high = 5;
+
+  //double coeff2_start = 0;
+  //double coeff2_low = -5;
+  //double coeff2_high = 2;
+
+  //double coeff3_start = 1;
+  //double coeff3_low = -3;
+  //double coeff3_high = 3;
+  
   double coeff1_start = -1;
-  double coeff1_low = -5;
-  double coeff1_high = 2;
+  double coeff1_low = -15;
+  double coeff1_high = 15;
 
-  double coeff2_start = -1;
-  double coeff2_low = -5;
-  double coeff2_high = 2;
+  double coeff2_start = 0;
+  double coeff2_low = -20;
+  double coeff2_high = 20;
 
-  double coeff3_start = 2;
-  double coeff3_low = 1;
+  double coeff3_start = 1;
+  double coeff3_low = -3;
   double coeff3_high = 3;
 
-  RooRealVar *coeff1 = new RooRealVar("BWZ_exp1","BWZ_exp1", coeff1_start, coeff1_low, coeff1_high);
-  RooRealVar *coeff2 = new RooRealVar("BWZ_exp2","BWZ_exp2", coeff2_start, coeff2_low, coeff2_high);
-  RooRealVar *coeff3 = new RooRealVar("BWZ_denom_pow","BWZ_denom_pow", coeff3_start, coeff3_low, coeff3_high);
+  RooRealVar *coeff1 = new RooRealVar(Form("%s_BWZR_exp1",prefix.c_str()),Form("%s_BWZR_exp1",prefix.c_str()), coeff1_start, coeff1_low, coeff1_high);
+  RooRealVar *coeff2 = new RooRealVar(Form("%s_BWZR_exp2",prefix.c_str()),Form("%s_BWZR_exp2",prefix.c_str()), coeff2_start, coeff2_low, coeff2_high);
+  RooRealVar *coeff3 = new RooRealVar(Form("%s_BWZR_denom_pow",prefix.c_str()),Form("%s_BWZR_denom_pow",prefix.c_str()), coeff3_start, coeff3_low, coeff3_high);
 
   dependents->add(*coeff1);
   dependents->add(*coeff2);
@@ -374,11 +408,13 @@ RooAbsPdf* PdfModelBuilder::getBWZRedux(string prefix, int order){
 
   //depends has order: [dielec_mass, BWZ_exp1, BWZ_exp2, BWZ_denom_pow, Zwidth, Zmass]
   string formula="";
-  formula += "(@4*TMath::Exp((@1*@0)+(@2*@0)))"; 
+  //formula += "(@4*TMath::Exp((0.01*@1*@0)+(0.0001*@2*@0*@0)))"; 
+  formula += "(@4*TMath::Exp((0.01*@1*@0)+(0.001*@2*@0*@0)))"; 
   formula += "/";
-  formula +="(TMath::Power((@0-@5),@3)+TMath::Power((@4/2),2))";
+  formula +="(TMath::Power((@0-@5),@3)+TMath::Power((@4/2),@3))";
 
   RooGenericPdf *BWZRedux = new RooGenericPdf(prefix.c_str(), prefix.c_str(), formula.c_str(), *dependents);
+  //RooAbsPdf *BWZRedux = new RooAbsPdf(prefix.c_str(), prefix.c_str(), formula.c_str(), *dependents);
   
   //bkgPdfs.insert(pair<string,RooAbsPdf*>(BWZ->GetName(),BWZ));?
   return BWZRedux;
@@ -444,7 +480,8 @@ RooAbsPdf* PdfModelBuilder::getExponentialSingle(string prefix, int order){
     for (int i=1; i<=nexps; i++){
       string name =  Form("%s_p%d",prefix.c_str(),i);
       string ename =  Form("%s_e%d",prefix.c_str(),i);
-      params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),TMath::Max(-1.,-0.04*(i+1)),-1.,0.)));
+      //params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),TMath::Max(-1.,-0.04*(i+1)),-1.,0.)));
+      params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),-0.1,-1,-0.0001)));
       utilities.insert(pair<string,RooAbsPdf*>(ename, new RooExponential(ename.c_str(),ename.c_str(),*obs_var,*params[name])));
       exps->add(*utilities[ename]);
     }
