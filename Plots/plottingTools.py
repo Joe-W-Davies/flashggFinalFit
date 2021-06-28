@@ -225,7 +225,7 @@ def makeSplusBPlot(workspace,hD,hSB,hB,hS,hDr,hBr,hSr,cat,options,dB=None,reduce
   #else: lat0.DrawLatex(0.15,0.77,"#scale[0.75]{m_{H} = 125.0 GeV, #mu = 1.0}")
   else:
       lat0.DrawLatex(0.15,0.77,"#scale[0.75]{m_{H} = 125.0 GeV}")
-      lat0.DrawLatex(0.15,0.71,"#scale[0.75]{#mu = 10^{5} x SM}")
+      lat0.DrawLatex(0.15,0.71,"#scale[0.75]{#mu = (6.84 x 10^{5}) x SM}")
   # Ratio plot
   pad2.cd()
   h_axes_ratio = hDr.Clone()

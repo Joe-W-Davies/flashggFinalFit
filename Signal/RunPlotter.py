@@ -19,7 +19,8 @@ def get_options():
   parser.add_option("--xvar", dest="xvar", default='CMS_hgg_mass:m_{ee}:GeV', help="x-var (name:title:units)")
   parser.add_option("--mass", dest="mass", default='125', help="Mass of datasets")
   parser.add_option("--MH", dest="MH", default='125', help="Higgs mass (for pdf)")
-  parser.add_option("--nBins", dest="nBins", default=160, type='int', help="Number of bins")
+  #parser.add_option("--nBins", dest="nBins", default=160, type='int', help="Number of bins")
+  parser.add_option("--nBins", dest="nBins", default=80, type='int', help="Number of bins")
   parser.add_option("--pdf_nBins", dest="pdf_nBins", default=3200, type='int', help="Number of bins")
   parser.add_option("--threshold", dest="threshold", default=0.001, type='float', help="Threshold to prune process from plot default = 0.1% of total category norm")
   parser.add_option("--translateCats", dest="translateCats", default=None, help="JSON to store cat translations")
@@ -140,7 +141,8 @@ for cat,f in inputFiles.iteritems():
     pdf = w.pdf("extend%s_%sThisLumi"%(outputWSObjectTitle__,_id)) 
     hpdfs[_id] = pdf.createHistogram("h_pdf_%s"%_id,xvar,ROOT.RooFit.Binning(opt.pdf_nBins))
     #hpdfs[_id].Scale(wcat*float(opt.nBins)/320) # FIXME: hardcoded 320
-    hpdfs[_id].Scale(wcat*float(opt.nBins)/640) # FIXME: hardcoded 320
+    #hpdfs[_id].Scale(wcat*float(opt.nBins)/640) # FIXME: hardcoded 320
+    hpdfs[_id].Scale(wcat*float(opt.nBins)/160) # FIXME: hardcoded 320
 
   # Fill total histograms: data, per-year pdfs and pdfs
   for _id,d in data_rwgt.iteritems(): d.fillHistogram(hists['data'],alist)

@@ -60,8 +60,11 @@ bool runFtestCheckWithToys=false;
 //int mgg_high =180;
 int mgg_low =110;
 int mgg_high =150;
-//int nBinsForMass = 4*(mgg_high-mgg_low);
 int nBinsForMass = 4*(mgg_high-mgg_low);
+
+//int mgg_low =100; 
+//int mgg_high =150;
+//int nBinsForMass = 3.2*(mgg_high-mgg_low); //keep 160 bins
 
 RooRealVar *intLumi_ = new RooRealVar("IntLumi","hacked int lumi", 1000.);
 
@@ -69,14 +72,15 @@ TRandom3 *RandomGen = new TRandom3();
 
 RooAbsPdf* getPdf(PdfModelBuilder &pdfsModel, string type, int order, const char* ext=""){
   
-  //if ((type=="Bernstein") && (order!=1)) return pdfsModel.getBernstein(Form("%s_bern%d",ext,order),order);
+  //FIXME
   if (type=="Bernstein") return pdfsModel.getBernstein(Form("%s_bern%d",ext,order),order);
   else if (type=="Chebychev") return pdfsModel.getChebychev(Form("%s_cheb%d",ext,order),order); 
   else if (type=="Exponential") return pdfsModel.getExponentialSingle(Form("%s_exp%d",ext,order),order); 
   else if (type=="PowerLaw") return pdfsModel.getPowerLawSingle(Form("%s_pow%d",ext,order),order); 
   else if (type=="Laurent") return pdfsModel.getLaurentSeries(Form("%s_lau%d",ext,order),order); 
-  else if (type=="BWZ") return pdfsModel.getBWZ(Form("%s_bwz%d",ext,order),order);  //dont actually need order here
-  else if (type=="BWZRedux") return pdfsModel.getBWZRedux(Form("%s_bwzredux%d",ext,order),order);  //dont actually need order here
+  else if (type=="BWZ") return pdfsModel.getBWZ(Form("%s_bwz%d",ext,order),order);  
+  else if (type=="BWZRedux") return pdfsModel.getBWZRedux(Form("%s_bwzredux%d",ext,order),order);  
+  else if (type=="BWZGamma") return pdfsModel.getBWZGamma(Form("%s_bwzgam%d",ext,order),order);  
   else {
     cerr << "[ERROR] -- getPdf() -- type " << type << " not recognised." << endl;
     return NULL;
@@ -249,14 +253,14 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
   int np = pdf->getParameters(*data)->getSize();
 
   double chi2 = plot_chi2->chiSquare("pdf","data",np);
-  std::cout << "Chi2 between bkg pdf and data: " << chi2 <<std::endl;
+  std::cout << "[JOE] Chi2 between bkg pdf and data: " << chi2 <<std::endl;
   std::cout << "[INFO] Calculating GOF for pdf " << pdf->GetName() << ", using " <<np << " fitted parameters" <<std::endl;
 
   // The first thing is to check if the number of entries in any bin is < 5 
   // if so, we don't rely on asymptotic approximations
  
   //if ((double)data->sumEntries()/nBinsForMass < 5 ){
-  if ((double)data->sumEntries()/nBinsForMass < 1 ){ //trying to avoid GOF from toys since its always small
+  if ((double)data->sumEntries()/nBinsForMass < 1 ){ //JOE: trying to avoid GOF from toys since associated "prob" its always small...
 
     std::cout << "[INFO] Running toys for GOF test " << std::endl;
     // store pre-fit params 
@@ -279,11 +283,14 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
       pdf->plotOn(plot_t);//,RooFit::NormRange("fitdata_1,fitdata_2"));
 
       double chi2_t = plot_t->chiSquare(np);
+      //std::cout << "[JOE] sum of weights in bineed toy hist = " << binnedtoy->sum(0)  <<  std::endl;
+      //std::cout << "[JOE] chi2_t (toy) = " << chi2_t  <<  std::endl;
       if( chi2_t>=chi2) npass++;
       toy_chi2.push_back(chi2_t*(nBinsForMass-np));
       delete plot_t;
     }
     std::cout << "[INFO] complete" << std::endl;
+    std::cout << "[JOE] prob= npass/ntoys = " << npass  << "/" << ntoys << std::endl;
     prob = (double)npass / ntoys;
 
     TCanvas *can = new TCanvas();
@@ -299,6 +306,7 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
     TArrow lData(chi2*(nBinsForMass-np),toyhist.GetMaximum(),chi2*(nBinsForMass-np),0);
     lData.SetLineWidth(2);
     lData.Draw();
+    std::cout << "\n saved canvas as: " << name.c_str() << std::endl;
     can->SaveAs(name.c_str());
 
     // back to best fit 	
@@ -306,12 +314,12 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
   } else {
     prob = TMath::Prob(chi2*(nBinsForMass-np),nBinsForMass-np);
   }
-  std::cout << "nBins for mass:   " << nBinsForMass << std::endl;
-  std::cout << "number of params: " << np << std::endl;
-  std::cout << "[INFO] Chi2 in Observed =  " << chi2*(nBinsForMass-np) << std::endl;
-  std::cout << "[INFO] p-value  =  " << prob << std::endl;
+  //std::cout << "nBins for mass:   " << nBinsForMass << std::endl;
+  //std::cout << "number of params: " << np << std::endl;
+  std::cout << "[JOE] Chi2 in Observed =  " << chi2*(nBinsForMass-np) << std::endl;
+  std::cout << "[JOE] p-value  =  " << prob << std::endl;
   delete pdf;
-  return prob;
+  return prob; //NOTE: this is actually GOF, not prob to do with comparing orders!! 
 
 }
 
@@ -630,7 +638,8 @@ int main(int argc, char* argv[]){
   int isFlashgg_ =1;
   string flashggCatsStr_;
   vector<string> flashggCats_;
- bool isData_ =0;
+  bool isData_ =0;
+  float correctionFactor = 0.5;
 
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -734,6 +743,7 @@ int main(int argc, char* argv[]){
 	functionClasses.push_back("Laurent");
 	functionClasses.push_back("BWZ");
 	functionClasses.push_back("BWZRedux");
+	functionClasses.push_back("BWZGamma");
 	map<string,string> namingMap;
 	namingMap.insert(pair<string,string>("Bernstein","pol"));
 	namingMap.insert(pair<string,string>("Exponential","exp"));
@@ -741,6 +751,7 @@ int main(int argc, char* argv[]){
 	namingMap.insert(pair<string,string>("Laurent","lau"));
 	namingMap.insert(pair<string,string>("BWZ","bwz"));
 	namingMap.insert(pair<string,string>("BWZRedux","bwzredux"));
+	namingMap.insert(pair<string,string>("BWZGamma","bwzgam"));
 
 	// store results here
 
@@ -756,7 +767,8 @@ int main(int argc, char* argv[]){
 	std:: cout << "[INFO] Got mass from ws " << mass << std::endl;
 	pdfsModel.setObsVar(mass);
 	//double upperEnvThreshold = 0.1; // upper threshold on delta(chi2) to include function in envelope (looser than truth function)
-	double upperEnvThreshold = 0.1; // upper threshold on delta(chi2) to include function in envelope (looser than truth function)
+	double upperEnvThreshold = 0.01; // upper threshold on delta(chi2) to include function in envelope (looser than truth function)
+	//double upperEnvThreshold = 0.005; // upper threshold on delta(chi2) to include function in envelope (looser than truth function)
 
 	fprintf(resFile,"Truth Model & d.o.f & $\\Delta NLL_{N+1}$ & $p(\\chi^{2}>\\chi^{2}_{(N\\rightarrow N+1)})$ \\\\\n");
 	fprintf(resFile,"\\hline\n");
@@ -833,7 +845,7 @@ int main(int argc, char* argv[]){
 		double MinimimNLLSoFar=1e10;
 		int simplebestFitPdfIndex = 0;
 
-		// Standard F-Test to find the truth functions
+		// Standard F-Test to find the truth functions. Start iteration over all function families here
 		for (vector<string>::iterator funcType=functionClasses.begin(); 
 				funcType!=functionClasses.end(); funcType++){
 
@@ -844,6 +856,7 @@ int main(int argc, char* argv[]){
 			RooAbsPdf *cache_pdf=NULL;
 			std::vector<int> pdforders;
 
+                        // loop through orders for current function family and cache one with best order (best fit for this family)
 			int counter =0;
 			//	while (prob<0.05){
 			while (prob<0.05 && order < 7){ //FIXME
@@ -857,12 +870,13 @@ int main(int argc, char* argv[]){
 					//RooFitResult *fitRes = bkgPdf->fitTo(*data,Save(true),RooFit::Minimizer("Minuit2","minimize"));
 					int fitStatus = 0;
 					//thisNll = fitRes->minNll();
-        bkgPdf->Print();
+                                        bkgPdf->Print();
 					runFit(bkgPdf,data,&thisNll,&fitStatus,/*max iterations*/3);//bkgPdf->fitTo(*data,Save(true),RooFit::Minimizer("Minuit2","minimize"));
 					if (fitStatus!=0) std::cout << "[WARNING] Warning -- Fit status for " << bkgPdf->GetName() << " at " << fitStatus <<std::endl;
        
 					chi2 = 2.*(prevNll-thisNll);
-					if (chi2<0. && order>1) chi2=0.;
+					//if (chi2<0. && order>1) chi2=0.;
+					if (chi2<0. && order>1 && (prev_order != 0) ) chi2=0.; // JOE: && prev function was not a disallowed order 1 funtion e.g. comparing bern2 to bern1(NULL)
 					if (prev_pdf!=NULL){
 						prob = getProbabilityFtest(chi2,order-prev_order,prev_pdf,bkgPdf,mass,data
 								,Form("%s/Ftest_from_%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,(cat+catOffset)));
@@ -915,19 +929,18 @@ int main(int argc, char* argv[]){
 					RooAbsPdf *bkgPdf = getPdf(pdfsModel,*funcType,order,Form("env_pdf_%d_%s",(cat+catOffset),ext.c_str()));
 			                std::cout << "considering PDF: " << *funcType << ", order of PDF: " << order << " for cat: " << cat << std::endl;
 
-                                        bool my_bad_fns = (catOffset==3 && *funcType=="Bernstein" && order==4); //Joe: temp fix to remove fn with TP in VBF cat 0
-                                        cout << "category bool is: " << my_bad_fns << endl;
+                                        //bool my_bad_fns = ( (catOffset==0 && *funcType=="Bernstein" && order>=3) || (catOffset==1 && *funcType=="Bernstein" && order>=3) ); //Joe: temp fix to remove fn with TP in ggH cat 0 and 1
+                                        bool my_bad_fns = ( (catOffset==0 && *funcType=="Bernstein" && order>=3) || (catOffset==1 && *funcType=="Bernstein" && order==3) ); //Joe: temp fix to remove fn with TP in ggH cat 0
+                                        //bool my_bad_fns = false
 
 					if (!bkgPdf || my_bad_fns){
 						// assume this order is not allowed
-						std::cout << "Name of NOT allowed PDF: " << *funcType << ", order of PDF: " << order << std::endl;
                                                 //if ((*funcType=="BWZ") or (*funcType=="BWZRedux")) break; //no "order" of BWs
 						if (order >6) { std::cout << " [WARNING] could not add ] " << std::endl; break ;}
 						order++;
 					}
 					else {
 						//RooFitResult *fitRes;
-						std::cout << "Name of ALLOWED PDF: " << *funcType << ", order of PDF: " << order << std::endl;
 						int fitStatus=0;
 						runFit(bkgPdf,data,&thisNll,&fitStatus,/*max iterations*/3);//bkgPdf->fitTo(*data,Save(true),RooFit::Minimizer("Minuit2","minimize"));
 						//thisNll = fitRes->minNll();
@@ -936,7 +949,6 @@ int main(int argc, char* argv[]){
 						chi2 = 2.*(prevNll-thisNll);
 						//if (chi2<0. && order>1) chi2=0.; //JOE: fails if first fn in family is not needed e.g. Bern 1
 						if (chi2<0. && order>1 && (prev_order != 0) ) chi2=0.; // JOE: && prev function was not a disallowed order 1 funtion e.g. comparing bern2 to bern1(NULL)
-                                                cout << "prev order is: " << prev_order << endl;
 						prob = TMath::Prob(chi2,order-prev_order);
 
 						cout << "[INFO] \t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << endl;
@@ -950,25 +962,37 @@ int main(int argc, char* argv[]){
                                                 //cout << "\n\n Function name: " << *funcType << endl;
                                                 //cout << "cat: " << cat << endl;
                                                 //cout << "catoffset : " << catOffset << endl;
-                                                //cout << "PROB:" << prob << endl;
-                                                //cout << "GOF PROB:" << gofProb << endl;
-                                                //cout << "\n\n" << endl;
+                                                cout << "\n\n" << endl;
+                                                cout << "PROB (that next order function was better):" << prob << endl;
+                                                cout << "GoF PROB (that function was a good fit at all):" << gofProb << endl;
+                                                cout << "\n\n" << endl;
 						if ((prob < upperEnvThreshold) ) { // Looser requirements for the envelope
 
 							//if (gofProb > 0.01 || order == truthOrder ) {  // Good looking fit or one of our regular truth functions 
 							if (gofProb > 0.01) {  // Joe: removed requirement to have at least 1 function from each family
 							//if ((gofProb > 0.01) || (*funcType=="BWZ") || (*funcType=="BWZRedux")){  // Joe: removed requirement to have at least 1 function from each family, EXCEPT for BWs
+							//
+                                                                std::unique_ptr<RooArgSet> vars(bkgPdf->getVariables());
+                                                                std::unique_ptr<RooAbsCollection> nonConstVars(vars->selectByAttrib("Constant", false));
 
+                                                                std::cout << "\n";
+								//std::cout << "[INFO] Adding to Envelope " << bkgPdf->GetName() << " "<< gofProb 
+							        //		<< " 2xNLL + c is " << myNll + bkgPdf->getVariables()->getSize() <<  std::endl;
 								std::cout << "[INFO] Adding to Envelope " << bkgPdf->GetName() << " "<< gofProb 
-									<< " 2xNLL + c is " << myNll + bkgPdf->getVariables()->getSize() <<  std::endl;
+									<< " 2xNLL + c is " << myNll + (2*correctionFactor*nonConstVars->getSize()) <<  std::endl;
+                                                                std::cout << "\n";
 								allPdfs.insert(pair<string,RooAbsPdf*>(Form("%s%d",funcType->c_str(),order),bkgPdf));
 								storedPdfs.add(*bkgPdf);
 								pdforders.push_back(order);
 
 								// Keep track but we shall redo this later
-								if ((myNll + bkgPdf->getVariables()->getSize()) < MinimimNLLSoFar) {
+								//if ((myNll + bkgPdf->getVariables()->getSize()) < MinimimNLLSoFar) {
+								//	simplebestFitPdfIndex = storedPdfs.getSize()-1;
+								//	MinimimNLLSoFar = myNll + bkgPdf->getVariables()->getSize();
+								//}
+								if ((myNll + (2*correctionFactor*nonConstVars->getSize())) < MinimimNLLSoFar) {
 									simplebestFitPdfIndex = storedPdfs.getSize()-1;
-									MinimimNLLSoFar = myNll + bkgPdf->getVariables()->getSize();
+									MinimimNLLSoFar = myNll + (2*correctionFactor*nonConstVars->getSize());
 								}
 							}
 						}
@@ -993,6 +1017,7 @@ int main(int argc, char* argv[]){
 
                 cout << "doing final plot" << endl;
 		plot(mass,pdfs,data,Form("%s/truths_cat%d",outDir.c_str(),(cat+catOffset)),flashggCats_,cat);
+                cout << "complete final plot" << endl;
 
 		if (saveMultiPdf){
 
@@ -1010,8 +1035,9 @@ int main(int argc, char* argv[]){
 			RooCategory catIndex(catindexname.c_str(),"c");
 			RooMultiPdf *pdf = new RooMultiPdf(Form("CMS_hgg_%s_%s_bkgshape",catname.c_str(),ext.c_str()),"all pdfs",catIndex,storedPdfs);
                         //JOE:
-                        //pdf->setCorrectionFactor(0.25);
-                        pdf->setCorrectionFactor(0.05);
+                        //pdf->setCorrectionFactor(0.01); //prev penalty (pass10)
+                        pdf->setCorrectionFactor(correctionFactor); //default penalty 
+                        //
 			//RooRealVar nBackground(Form("CMS_hgg_%s_%s_bkgshape_norm",catname.c_str(),ext.c_str()),"nbkg",data->sumEntries(),0,10E8);
 			RooRealVar nBackground(Form("CMS_hgg_%s_%s_bkgshape_norm",catname.c_str(),ext.c_str()),"nbkg",data->sumEntries(),0,3*data->sumEntries());
 			//nBackground.removeRange(); // bug in roofit will break combine until dev branch brought in
@@ -1022,9 +1048,10 @@ int main(int argc, char* argv[]){
 			std::cout << "[INFO] Created MultiPdf " << pdf->GetName() << ", in Category " << cat << " with a total of " << catIndex.numTypes() << " pdfs"<< std::endl;
                         cout << "about to print stored pdfs..." << endl;
 			storedPdfs.Print();
-			std::cout << "[INFO] Best Fit Pdf = " << bestFitPdfIndex << ", " << storedPdfs.at(bestFitPdfIndex)->GetName() << std::endl;
-			std::cout << "// ------------------------------------------------------------------------- //" <<std::endl;
-			std::cout << "[INFO] Simple check of index "<< simplebestFitPdfIndex <<std::endl;
+
+			//std::cout << "[INFO] Best Fit Pdf = " << bestFitPdfIndex << ", " << storedPdfs.at(bestFitPdfIndex)->GetName() << std::endl;
+			//std::cout << "// ------------------------------------------------------------------------- //" <<std::endl;
+			//std::cout << "[INFO] Simple check of index "<< simplebestFitPdfIndex <<std::endl;
 
 			mass->setBins(nBinsForMass);
 			RooDataHist dataBinned(Form("roohist_data_mass_%s",catname.c_str()),"data",*mass,*dataFull);

@@ -469,14 +469,14 @@ def plotSignalModel(_hists,_opt,_outdir=".",offset=0.02):
     leg1.SetFillStyle(0)
     leg1.SetLineColor(0)
     leg1.SetTextSize(0.03)
-    for year in _opt.years.split(","): leg1.AddEntry(_hists['pdf_%s'%year],"%s: #scale[0.8]{#sigma_{eff} = %1.2f GeV}"%(year,getEffSigma(_hists['pdf_%s'%year])),"l")
+    for year in _opt.years.split(","): leg1.AddEntry(_hists['pdf_%s'%year],"%s: #scale[0.8]{#sigma_{eff} = %1.1f GeV}"%(year,getEffSigma(_hists['pdf_%s'%year])),"l")
     leg1.Draw("Same")
 
     leg2 = ROOT.TLegend(0.15+offset,0.3,0.5+offset,0.45)
     leg2.SetFillStyle(0)
     leg2.SetLineColor(0)
     leg2.SetTextSize(0.03)
-    leg2.AddEntry(h_effSigma,"#sigma_{eff} = %1.2f GeV"%(0.5*(effSigma_high-effSigma_low)),"fl")
+    leg2.AddEntry(h_effSigma,"#sigma_{eff} = %1.1f GeV"%(0.5*(effSigma_high-effSigma_low)),"fl")
     leg2.Draw("Same")
   else:
     year = _opt.years
@@ -486,7 +486,7 @@ def plotSignalModel(_hists,_opt,_outdir=".",offset=0.02):
     leg.SetTextSize(0.03)
     leg.AddEntry(_hists['data'],"Simulation","lep")
     leg.AddEntry(_hists['pdf'],"#splitline{Parametric}{model (%s)}"%year,"l")
-    leg.AddEntry(h_effSigma,"#sigma_{eff} = %1.2f GeV"%(0.5*(effSigma_high-effSigma_low)),"fl")
+    leg.AddEntry(h_effSigma,"#sigma_{eff} = %1.1f GeV"%(0.5*(effSigma_high-effSigma_low)),"fl")
     leg.Draw("Same")    
 
   # Set style effSigma

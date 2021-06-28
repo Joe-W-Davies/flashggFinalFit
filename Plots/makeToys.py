@@ -13,6 +13,7 @@ def get_options():
   parser.add_option("--ext", dest="ext", default='', help="Extension for saving")
   parser.add_option("--nToys", dest="nToys", default=500, type='int', help="Number of toys")
   parser.add_option("--POIs", dest="POIs", default="r", help="Parameters of interest in fit")
+  parser.add_option("--setPOIValue", dest="setPOIValue", default="1", help="Set parameters of interest in fit", type=float)
   parser.add_option("--batch", dest="batch", default="IC", help="Batch system [IC,condor]")
   parser.add_option("--queue", dest="queue", default="workday", help="Change condor queue")
   parser.add_option('--dryRun',dest='dryRun', default=False, action="store_true", help='Dry run')
@@ -37,7 +38,11 @@ for poi in opt.POIs.split(","): poi_bf[poi] = w.var(poi).getVal()
 setParamStr = "--setParameters "
 setParam0Str = "--setParameters "
 for p,v in poi_bf.iteritems(): 
-  setParamStr += "%s=%.3f,"%(p,v)
+  print p,v
+  if p=='r': #JOE 
+      setParamStr += "%s=%.3f,"%(p,opt.setPOIValue)
+  else:
+      setParamStr += "%s=%.3f,"%(p,v)
   setParam0Str += "%s=0,"%p
 setParamStr = setParamStr[:-1]
 setParam0Str = setParam0Str[:-1]
