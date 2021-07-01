@@ -302,7 +302,7 @@ class FinalModel:
     else:
       # For total pdf
       _pdfs, _coeffs = ROOT.RooArgList(), ROOT.RooArgList()
-
+ 
       nGFrac = ssf.nGaussians if ssf.addFSR else ssf.nGaussians-1
 
       for g in range(0,ssf.nGaussians):
@@ -322,7 +322,7 @@ class FinalModel:
         _pdfs.add(self.Pdfs['gaus_g%g_%s'%(g,extStr)])
         
         # Fractions
-        if g < ssf.nGaussians-1:
+        if g < nGFrac:
           self.Splines['frac_g%g_%s'%(g,extStr)] = ssf.Splines['frac_g%g_constrained'%g]
           self.Splines['frac_g%g_%s'%(g,extStr)].SetName("frac_g%g_%s"%(g,extStr))
           _coeffs.add(self.Splines['frac_g%g_%s'%(g,extStr)])
