@@ -188,8 +188,9 @@ def plotFTestResults(ssfs,_opt,_outdir="./",_extension='',_proc='',_cat='',_mass
 def plotPdfComponents(ssf,_outdir='./',_extension='',_proc='',_cat=''):
   canv = ROOT.TCanvas()
   canv.SetLeftMargin(0.15)
+  canv.SetLogy()
   ssf.MH.setVal(125)
-  LineColorMap = {0:ROOT.kAzure+1,1:ROOT.kRed-4,2:ROOT.kOrange,3:ROOT.kGreen+2,4:ROOT.kMagenta-9}
+  LineColorMap = {0:ROOT.kAzure+1,1:ROOT.kRed-4,2:ROOT.kOrange,3:ROOT.kGreen+2,4:ROOT.kMagenta-9,5:ROOT.kOrange-7}
   pdfs = od()
   hists = od()
   hmax, hmin = 0, 0
@@ -200,18 +201,20 @@ def plotPdfComponents(ssf,_outdir='./',_extension='',_proc='',_cat=''):
   hists['final'].SetTitle("")
   #hists['final'].GetXaxis().SetTitle("m_{#gamma#gamma} [GeV]")
   hists['final'].GetXaxis().SetTitle("m_{ee} [GeV]")
-  hists['final'].SetMinimum(0)
+  #hists['final'].SetMinimum(0)
+  hists['final'].SetMinimum(0.00001)
   if hists['final'].GetMaximum()>hmax: hmax = hists['final'].GetMaximum()
   if hists['final'].GetMinimum()<hmin: hmin = hists['final'].GetMinimum()
-  hists['final'].GetXaxis().SetRangeUser(115,140)
+  hists['final'].GetXaxis().SetRangeUser(110,150)
   # Create data histogram
   hists['data'] = ssf.xvar.createHistogram("h_data%s"%_extension,ROOT.RooFit.Binning(ssf.nBins))
   ssf.DataHists['125'].fillHistogram(hists['data'],ROOT.RooArgList(ssf.xvar))
   hists['data'].SetTitle("")
   #hists['data'].GetXaxis().SetTitle("m_{#gamma#gamma} [GeV]")
   hists['data'].GetXaxis().SetTitle("m_{ee} [GeV]")
-  hists['data'].SetMinimum(0)
-  hists['data'].GetXaxis().SetRangeUser(115,140)
+  #hists['data'].SetMinimum(0)
+  hists['data'].SetMinimum(0.00001)
+  hists['data'].GetXaxis().SetRangeUser(110,150)
   hists['data'].Scale(float(ssf.nBins)/1600)
   hists['data'].SetMarkerStyle(20)
   hists['data'].SetMarkerColor(1)
@@ -220,7 +223,8 @@ def plotPdfComponents(ssf,_outdir='./',_extension='',_proc='',_cat=''):
   if hists['data'].GetMinimum()<hmin: hmin = hists['data'].GetMinimum()
   # Draw histograms
   hists['data'].SetMaximum(1.2*hmax)
-  hists['data'].SetMinimum(1.2*hmin)
+  #hists['data'].SetMinimum(1.2*hmin)
+  hists['data'].SetMinimum(0.00001)
   hists['data'].Draw("PE")
   hists['final'].Draw("Same HIST")
   # Individual Gaussian histograms

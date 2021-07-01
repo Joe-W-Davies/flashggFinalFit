@@ -303,6 +303,8 @@ class FinalModel:
       # For total pdf
       _pdfs, _coeffs = ROOT.RooArgList(), ROOT.RooArgList()
 
+      nGFrac = ssf.nGaussians if ssf.addFSR else ssf.nGaussians-1
+
       for g in range(0,ssf.nGaussians):
         # Extract splines
         for f in ['dm','sigma']:
@@ -325,8 +327,21 @@ class FinalModel:
           self.Splines['frac_g%g_%s'%(g,extStr)].SetName("frac_g%g_%s"%(g,extStr))
           _coeffs.add(self.Splines['frac_g%g_%s'%(g,extStr)])
 
-        # Define total pdf
-        self.Pdfs[ext] = ROOT.RooAddPdf("%s_%s"%(outputWSObjectTitle__,extStr),"%s_%s"%(outputWSObjectTitle__,extStr),_pdfs,_coeffs,_recursive)
+      # Add FSR Pdf
+      if ssf.addFSR:
+        # Extract splines
+        for f in ['dm','sigma']:
+          k = "%s_FSR"%f
+          self.Splines["%s_%s"%(k,extStr)] = ssf.Splines[k].Clone()
+          self.Splines["%s_%s"%(k,extStr)].SetName("%s_%s"%(re.sub("sigma","sigma_fit",k),extStr))
+        # Build mean and sigma functions for FSR gaussian: no systematics
+        self.buildMean('dm_FSR_%s'%extStr,skipSystematics=True)
+        self.buildSigma('sigma_FSR_%s'%extStr,skipSystematics=True)
+        self.Pdfs['gaus_FSR_%s'%extStr] = ROOT.RooGaussian("gaus_FSR_%s"%extStr,"gaus_FSR_%s"%extStr,self.xvar,self.Functions["mean_FSR_%s"%extStr],self.Functions["sigma_FSR_%s"%extStr])
+        _pdfs.add(self.Pdfs['gaus_FSR_%s'%extStr])
+
+      # Define total pdf
+      self.Pdfs[ext] = ROOT.RooAddPdf("%s_%s"%(outputWSObjectTitle__,extStr),"%s_%s"%(outputWSObjectTitle__,extStr),_pdfs,_coeffs,_recursive)
 
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Functions to build mean, sigma and rate functions with systematics
