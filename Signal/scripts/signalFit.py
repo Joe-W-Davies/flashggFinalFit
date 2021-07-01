@@ -42,6 +42,7 @@ def get_options():
   parser.add_option('--doPlots', dest='doPlots', default=False, action="store_true", help="Produce Signal Fitting plots")
   parser.add_option("--doVoigtian", dest='doVoigtian', default=False, action="store_true", help="Use Voigtians instead of Gaussians for signal models with Higgs width as parameter")
   parser.add_option("--useDCB", dest='useDCB', default=False, action="store_true", help="Use DCB in signal fitting")
+  parser.add_option("--addFSR", dest='addFSR', default=False, action="store_true", help="Add extra gaussian to model FSR in low mass tail")
   parser.add_option("--useDiagonalProcForShape", dest='useDiagonalProcForShape', default=False, action="store_true", help="Use shape of diagonal process, keeping normalisation (requires diagonal mapping produced by getDiagProc script)")
   parser.add_option('--skipVertexScenarioSplit', dest='skipVertexScenarioSplit', default=False, action="store_true", help="Skip vertex scenario split")
   parser.add_option('--skipZeroes', dest='skipZeroes', default=False, action="store_true", help="Skip proc x cat is numEntries = 0., or sumEntries < 0.")
@@ -265,7 +266,9 @@ if not opt.skipBeamspotReweigh:
 if not opt.useDCB:
   with open("%s/outdir_%s/fTest/json/nGauss_%s.json"%(swd__,opt.ext,catRVFit)) as jf: ngauss = json.load(jf)
   nRV = int(ngauss["%s__%s"%(procRVFit,catRVFit)]['nRV'])
-  if opt.skipVertexScenarioSplit: print " --> Fitting function: convolution of nGaussians (%g)"%nRV
+  if opt.skipVertexScenarioSplit: 
+    if opt.addFSR: print " --> Fitting function: convolution of nGaussians (%g) + FSR"%nRV
+    else: print " --> Fitting function: convolution of nGaussians (%g)"%nRV
   else: 
     with open("%s/outdir_%s/fTest/json/nGauss_%s.json"%(swd__,opt.ext,catWVFit)) as jf: ngauss = json.load(jf)
     nWV = int(ngauss["%s__%s"%(procWVFit,catWVFit)]['nWV'])
@@ -280,7 +283,7 @@ if opt.doVoigtian:
 # FIT: simultaneous signal fit (ssf)
 ssfMap = od()
 name = "Total" if opt.skipVertexScenarioSplit else "RV"
-ssfRV = SimultaneousFit(name,opt.proc,opt.cat,datasetRVForFit,xvar.Clone(),MH,MHLow,MHHigh,opt.massPoints,opt.nBins,opt.MHPolyOrder,opt.minimizerMethod,opt.minimizerTolerance)
+ssfRV = SimultaneousFit(name,opt.proc,opt.cat,datasetRVForFit,xvar.Clone(),MH,MHLow,MHHigh,opt.massPoints,opt.nBins,opt.MHPolyOrder,opt.minimizerMethod,opt.minimizerTolerance,opt.addFSR)
 if opt.useDCB: ssfRV.buildDCBplusGaussian()
 else: ssfRV.buildNGaussians(nRV)
 ssfRV.runFit()
@@ -289,7 +292,7 @@ ssfMap[name] = ssfRV
 
 if not opt.skipVertexScenarioSplit:
   name = "WV"
-  ssfWV = SimultaneousFit(name,opt.proc,opt.cat,datasetWVForFit,xvar.Clone(),MH,MHLow,MHHigh,opt.massPoints,opt.nBins,opt.MHPolyOrder,opt.minimizerMethod,opt.minimizerTolerance)
+  ssfWV = SimultaneousFit(name,opt.proc,opt.cat,datasetWVForFit,xvar.Clone(),MH,MHLow,MHHigh,opt.massPoints,opt.nBins,opt.MHPolyOrder,opt.minimizerMethod,opt.minimizerTolerance,opt.addFSR)
   if opt.useDCB: ssfWV.buildDCBplusGaussian()
   else: ssfWV.buildNGaussians(nWV)
   ssfWV.runFit()

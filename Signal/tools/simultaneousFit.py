@@ -50,6 +50,14 @@ pLUT['Gaussian']['dm_p2'] = [0.0,-0.01,0.01]
 pLUT['Gaussian']['sigma_p0'] = ['func',0.5,10.0]
 pLUT['Gaussian']['sigma_p1'] = [0.0,-0.01,0.01]
 pLUT['Gaussian']['sigma_p2'] = [0.0,-0.01,0.01]
+pLUT['FSR'] = od()
+pLUT['FSR']['dm_p0'] = [-10.,-15.,-5.]
+pLUT['FSR']['dm_p1'] = [0.0,-0.01,0.01]
+pLUT['FSR']['dm_p2'] = [0.0,-0.01,0.01]
+pLUT['FSR']['sigma_p0'] = [5.0,3.0,20.0]
+pLUT['FSR']['sigma_p1'] = [0.0,-0.01,0.01]
+pLUT['FSR']['sigma_p2'] = [0.0,-0.01,0.01]
+
 pLUT['FracGaussian'] = od()
 pLUT['FracGaussian']['p0'] = ['func',0.01,0.99]
 pLUT['FracGaussian']['p1'] = [0.01,-0.005,0.005]
@@ -73,8 +81,7 @@ def poisson_interval(x,eSumW2,level=0.68):
 # Function to calc chi2 for binned fit given pdf, RooDataHist and xvar as inputs
 #def calcChi2(x,pdf,d,errorType="Sumw2",_verbose=False,fitRange=[100,180]):
 #def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[110,140]): #original
-#def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[118,130]): #previous
-def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[110,130]): #DCB studies
+def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[110,135]): #previous
 
   k = 0. # number of non empty bins (for calc degrees of freedom)
   normFactor = d.sumEntries()
@@ -153,7 +160,7 @@ def nChi2Addition(X,ssf,verbose=False):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
 class SimultaneousFit:
   # Constructor
-  def __init__(self,_name,_proc,_cat,_datasetForFit,_xvar,_MH,_MHLow,_MHHigh,_massPoints,_nBins,_MHPolyOrder,_minimizerMethod,_minimizerTolerance,verbose=True):
+  def __init__(self,_name,_proc,_cat,_datasetForFit,_xvar,_MH,_MHLow,_MHHigh,_massPoints,_nBins,_MHPolyOrder,_minimizerMethod,_minimizerTolerance,_addFSR=False,verbose=True):
     self.name = _name
     self.proc = _proc
     self.cat = _cat
@@ -167,6 +174,7 @@ class SimultaneousFit:
     self.MHPolyOrder = _MHPolyOrder
     self.minimizerMethod = _minimizerMethod
     self.minimizerTolerance = _minimizerTolerance
+    self.addFSR = _addFSR
     self.verbose = verbose
     # Prepare vars
     self.MH.setConstant(False)
@@ -303,8 +311,25 @@ class SimultaneousFit:
       # Build Gaussian
       self.Pdfs['gaus_g%g'%g] = ROOT.RooGaussian("gaus_g%g"%g,"gaus_g%g"%g,self.xvar,self.Polynomials['mean_g%g'%g],self.Polynomials['sigma_g%g'%g])
 
+      # Add FSR
+      if self.addFSR:
+        # Define polynomial functions for mean and sigma
+        for f in ['dm','sigma']:
+          k = "%s_FSR"%f
+          self.Varlists[k] = ROOT.RooArgList("%s_coeffs"%k)
+          # Create coeff for polynomial of order MHPolyOrder
+          for po in range(0,self.MHPolyOrder+1):
+            self.Vars['%s_p%g'%(k,po)] = ROOT.RooRealVar("%s_p%g"%(k,po),"%s_p%g"%(k,po),pLUT['FSR']["%s_p%s"%(f,po)][0],pLUT['FSR']["%s_p%s"%(f,po)][1],pLUT['FSR']["%s_p%s"%(f,po)][2])
+            self.Varlists[k].add( self.Vars['%s_p%g'%(k,po)] )
+          self.Polynomials[k] = ROOT.RooPolyVar(k,k,self.dMH,self.Varlists[k])
+        # Mean functions
+        self.Polynomials['mean_FSR'] = ROOT.RooFormulaVar("mean_FSR","mean_FSR","(@0+@1)",ROOT.RooArgList(self.MH,self.Polynomials['dm_FSR']))
+        # Build FSR
+        self.Pdfs['gaus_FSR'] = ROOT.RooGaussian("gaus_FSR","gaus_FSR",self.xvar,self.Polynomials['mean_FSR'],self.Polynomials['sigma_FSR'])
+
       # Relative fractions: also polynomials of order MHPolyOrder (define up to n=nGaussians-1)
-      if g < nGaussians-1:
+      nGFrac = nGaussians if self.addFSR else nGaussians-1
+      if g < nGFrac:
 	self.Varlists['frac_g%g'%g] = ROOT.RooArgList("frac_g%g_coeffs"%g)
 	for po in range(0,self.MHPolyOrder+1):
 	  if po == 0:
@@ -323,7 +348,8 @@ class SimultaneousFit:
     _pdfs, _coeffs = ROOT.RooArgList(), ROOT.RooArgList()
     for g in range(0,nGaussians): 
       _pdfs.add(self.Pdfs['gaus_g%g'%g])
-      if g < nGaussians-1: _coeffs.add(self.Coeffs['frac_g%g_constrained'%g])
+      if g < nGFrac: _coeffs.add(self.Coeffs['frac_g%g_constrained'%g])
+    if self.addFSR: _pdfs.add(self.Pdfs['gaus_FSR'])
     self.Pdfs['final'] = ROOT.RooAddPdf("%s_%s"%(self.proc,self.cat),"%s_%s"%(self.proc,self.cat),_pdfs,_coeffs,_recursive)
     
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
