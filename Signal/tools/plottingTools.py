@@ -188,7 +188,7 @@ def plotFTestResults(ssfs,_opt,_outdir="./",_extension='',_proc='',_cat='',_mass
 def plotPdfComponents(ssf,_outdir='./',_extension='',_proc='',_cat=''):
   canv = ROOT.TCanvas()
   canv.SetLeftMargin(0.15)
-  canv.SetLogy()
+  #canv.SetLogy()
   ssf.MH.setVal(125)
   LineColorMap = {0:ROOT.kAzure+1,1:ROOT.kRed-4,2:ROOT.kOrange,3:ROOT.kGreen+2,4:ROOT.kMagenta-9,5:ROOT.kOrange-7}
   pdfs = od()
