@@ -11,7 +11,8 @@ from array import array
 # So far defined up to MHPolyOrder=2
 pLUT = od()
 pLUT['DCB'] = od()
-pLUT['DCB']['dm_p0'] = [0.1,-2.5,2.5]
+#pLUT['DCB']['dm_p0'] = [0.1,-2.5,2.5]
+pLUT['DCB']['dm_p0'] = [0.1,-10,5] #Hee changes
 pLUT['DCB']['dm_p1'] = [0.0,-0.1,0.1]
 pLUT['DCB']['dm_p2'] = [0.0,-0.001,0.001]
 pLUT['DCB']['sigma_p0'] = [2.,1.,20.]
@@ -30,10 +31,12 @@ pLUT['DCB']['a2_p0'] = [1.,1.,20.]
 pLUT['DCB']['a2_p1'] = [0.0,-0.1,0.1]
 pLUT['DCB']['a2_p2'] = [0.0,-0.001,0.001]
 pLUT['Gaussian_wdcb'] = od()
-pLUT['Gaussian_wdcb']['dm_p0'] = [0.1,-1.5,1.5]
+#pLUT['Gaussian_wdcb']['dm_p0'] = [0.1,-1.5,1.5] #Hee changes
+pLUT['Gaussian_wdcb']['dm_p0'] = [0.1,-5,5] 
 pLUT['Gaussian_wdcb']['dm_p1'] = [0.01,-0.01,0.01]
 pLUT['Gaussian_wdcb']['dm_p2'] = [0.01,-0.01,0.01]
-pLUT['Gaussian_wdcb']['sigma_p0'] = [1.5,1.0,4.]
+#pLUT['Gaussian_wdcb']['sigma_p0'] = [1.5,1.0,4.] #Hee
+pLUT['Gaussian_wdcb']['sigma_p0'] = [1,0.5,4.]
 pLUT['Gaussian_wdcb']['sigma_p1'] = [0.0,-0.1,0.1]
 pLUT['Gaussian_wdcb']['sigma_p2'] = [0.0,-0.001,0.001]
 pLUT['Frac'] = od()
@@ -70,7 +73,8 @@ def poisson_interval(x,eSumW2,level=0.68):
 # Function to calc chi2 for binned fit given pdf, RooDataHist and xvar as inputs
 #def calcChi2(x,pdf,d,errorType="Sumw2",_verbose=False,fitRange=[100,180]):
 #def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[110,140]): #original
-def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[118,130]): #previous
+#def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[118,130]): #previous
+def calcChi2(x,pdf,d,errorType="Poisson",_verbose=False,fitRange=[110,130]): #DCB studies
 
   k = 0. # number of non empty bins (for calc degrees of freedom)
   normFactor = d.sumEntries()
