@@ -33,6 +33,7 @@ globalXSBRMap['Hee'] = od()
 globalXSBRMap['Hee']['decay'] = {'mode':'constant', 'factor':5E-9} #factor= decay BR
 globalXSBRMap['Hee']['GG2H'] = {'mode':'ggH'}
 globalXSBRMap['Hee']['VBF'] = {'mode':'qqH'}
+globalXSBRMap['Hee']['TTH'] = {'mode':'ttH'}
 
 # STXS analysis: add factor for bin composition
 globalXSBRMap['STXS'] = od()

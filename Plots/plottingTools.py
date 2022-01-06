@@ -206,10 +206,10 @@ def makeSplusBPlot(workspace,hD,hSB,hB,hS,hDr,hBr,hSr,cat,options,dB=None,reduce
   lat0.DrawLatex(0.6,0.92,"137 fb^{-1} (13 TeV)")
   lat0.DrawLatex(0.6,0.8,"#scale[0.75]{%s}"%Translate(cat,translateCats))
   #lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrow#gamma#gamma}")
-  lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrowee}")
+  lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrowee}, m_{H} = 125.38 GeV")
   #lat0.DrawLatex(0.15,0.83,"#scale[0.75]{H#rightarrow#gamma#gamma, m_{H} = 125.38 GeV}")
-  if(options.loadSnapshot is not None):
-    lat0.DrawLatex(0.15,0.77,"#scale[0.5]{(#hat{#mu}_{ggH},#hat{#mu}_{VBF},#hat{#mu}_{VH},#hat{#mu}_{top}) = (0.98,1.15,0.71,1.40)}")
+  if(options.loadSnapshot is not None): pass
+    #lat0.DrawLatex(0.15,0.77,"#scale[0.5]{(#hat{#mu}_{ggH},#hat{#mu}_{VBF},#hat{#mu}_{VH},#hat{#mu}_{top}) = (0.98,1.15,0.71,1.40)}")
     #lat0.DrawLatex(0.15,0.77,"#scale[0.75]{#hat{#mu} = 1.03}")
     #muhat_ggh, muhat_vbf, muhat_vh, muhat_top, mhhat = workspace.var("r_ggH").getVal(), workspace.var("r_VBF").getVal(), workspace.var("r_VH").getVal(), workspace.var("r_top").getVal(), workspace.var("MH").getVal()
     #lat0.DrawLatex(0.13,0.77,"#scale[0.6]{(#hat{#mu}_{ggH},#hat{#mu}_{VBF},#hat{#mu}_{VH},#hat{#mu}_{top}) = (%.2f,%.2f,%.2f,%.2f)}"%(muhat_ggh,muhat_vbf,muhat_vh,muhat_top))
@@ -225,7 +225,7 @@ def makeSplusBPlot(workspace,hD,hSB,hB,hS,hDr,hBr,hSr,cat,options,dB=None,reduce
   #else: lat0.DrawLatex(0.15,0.77,"#scale[0.75]{m_{H} = 125.0 GeV, #mu = 1.0}")
   else:
       lat0.DrawLatex(0.15,0.77,"#scale[0.75]{m_{H} = 125.0 GeV}")
-      lat0.DrawLatex(0.15,0.71,"#scale[0.75]{#mu = (6.84 x 10^{5}) x SM}")
+      lat0.DrawLatex(0.15,0.71,"#scale[0.75]{#mu = (6.28 x 10^{5}) x SM}")
   # Ratio plot
   pad2.cd()
   h_axes_ratio = hDr.Clone()

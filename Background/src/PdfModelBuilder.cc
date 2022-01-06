@@ -45,6 +45,7 @@ PdfModelBuilder::PdfModelBuilder():
   recognisedPdfTypes.push_back("Exponential");
   recognisedPdfTypes.push_back("PowerLaw");
   recognisedPdfTypes.push_back("Laurent");
+  recognisedPdfTypes.push_back("BWSimple"); //adding for Hee
   recognisedPdfTypes.push_back("BWZ"); //adding for Hee
   recognisedPdfTypes.push_back("BWZGamma"); //adding for Hee
   recognisedPdfTypes.push_back("BWZRedux"); //adding for Hee
@@ -426,6 +427,33 @@ RooAbsPdf* PdfModelBuilder::getBWZGamma(string prefix, int order){
 //      }
 //
 //}
+//
+RooAbsPdf* PdfModelBuilder::getBWSimple(string prefix, int order){
+  
+  if (order>1) return NULL; //added one free parameter (normalisation)
+  RooConstVar *Zwidth =  new RooConstVar("Zwidth", "Zwidth", 2.50);
+  RooConstVar *Zmass =  new RooConstVar("Zmass", "Zmass", 91.19);
+
+  double coeff1_start = 1;
+  double coeff1_low   = 0.001;
+  double coeff1_high  = 10;
+
+  //string pname =  Form("%s_pow0",prefix.c_str());
+  RooRealVar *coeff1 = new RooRealVar(Form("%s_BWS_exponent",prefix.c_str()),Form("%s_BWS_exponent",prefix.c_str()), coeff1_start, coeff1_low, coeff1_high);
+
+  RooArgList *dependents = new RooArgList(); 
+  dependents->add(*obs_var);
+  dependents->add(*Zwidth);
+  dependents->add(*Zmass);
+  dependents->add(*coeff1);
+
+  //depends has order: [dielec_mass, Zwidth, Zmass, Norm?] #FIXME does BW have a norm...? What is the functional form being requested by the ARC?
+  string formula="(@3*@1)/(TMath::Power((@0-@2),2)+TMath::Power((@2/2),2))";
+
+  RooGenericPdf *BWSimple = new RooGenericPdf(prefix.c_str(), prefix.c_str(), formula.c_str(), *dependents);
+  return BWSimple;
+
+}
 
 RooAbsPdf* PdfModelBuilder::getBWZ(string prefix, int order){
   
@@ -642,6 +670,7 @@ void PdfModelBuilder::addBkgPdf(string type, int nParams, string name, bool cach
   if (type=="Exponential") pdf = getExponentialSingle(name,nParams);
   if (type=="PowerLaw") pdf = getPowerLawSingle(name,nParams);
   if (type=="Laurent") pdf = getLaurentSeries(name,nParams);
+  if (type=="BWSimple") pdf = getBWSimple(name,nParams);
   if (type=="BWZ") pdf = getBWZ(name,nParams);
   if (type=="BWZGamma") pdf = getBWZGamma(name,nParams);
   if (type=="BWZRedux") pdf = getBWZ(name,nParams);

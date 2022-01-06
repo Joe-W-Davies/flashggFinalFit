@@ -78,6 +78,7 @@ RooAbsPdf* getPdf(PdfModelBuilder &pdfsModel, string type, int order, const char
   else if (type=="Exponential") return pdfsModel.getExponentialSingle(Form("%s_exp%d",ext,order),order); 
   else if (type=="PowerLaw") return pdfsModel.getPowerLawSingle(Form("%s_pow%d",ext,order),order); 
   else if (type=="Laurent") return pdfsModel.getLaurentSeries(Form("%s_lau%d",ext,order),order); 
+  else if (type=="BWSimple") return pdfsModel.getBWSimple(Form("%s_bws%d",ext,order),order);  
   else if (type=="BWZ") return pdfsModel.getBWZ(Form("%s_bwz%d",ext,order),order);  
   else if (type=="BWZRedux") return pdfsModel.getBWZRedux(Form("%s_bwzredux%d",ext,order),order);  
   else if (type=="BWZGamma") return pdfsModel.getBWZGamma(Form("%s_bwzgam%d",ext,order),order);  
@@ -247,7 +248,7 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
 
   // get The Chi2 value from the data
   RooPlot *plot_chi2 = mass->frame();
-  data->plotOn(plot_chi2,Binning(nBinsForMass),Name("data"));
+  data->plotOn(plot_chi2,Binning(nBinsForMass/2),Name("data"));
 
   pdf->plotOn(plot_chi2,Name("pdf"));
   int np = pdf->getParameters(*data)->getSize();
@@ -259,8 +260,8 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
   // The first thing is to check if the number of entries in any bin is < 5 
   // if so, we don't rely on asymptotic approximations
  
-  //if ((double)data->sumEntries()/nBinsForMass < 5 ){
-  if ((double)data->sumEntries()/nBinsForMass < 1 ){ //JOE: trying to avoid GOF from toys since associated "prob" its always small...
+  //if ((double)data->sumEntries()/nBinsForMass < 10 ){
+  if ((double)data->sumEntries()/nBinsForMass < 1 ){ //JOE: trying to avoid GOF from toys since associated p-value its always small...
 
     std::cout << "[INFO] Running toys for GOF test " << std::endl;
     // store pre-fit params 
@@ -286,7 +287,7 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
       //std::cout << "[JOE] sum of weights in bineed toy hist = " << binnedtoy->sum(0)  <<  std::endl;
       //std::cout << "[JOE] chi2_t (toy) = " << chi2_t  <<  std::endl;
       if( chi2_t>=chi2) npass++;
-      toy_chi2.push_back(chi2_t*(nBinsForMass-np));
+      toy_chi2.push_back(chi2_t*(nBinsForMass/2-np));
       delete plot_t;
     }
     std::cout << "[INFO] complete" << std::endl;
@@ -303,7 +304,7 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
     }
     toyhist.Draw();
 
-    TArrow lData(chi2*(nBinsForMass-np),toyhist.GetMaximum(),chi2*(nBinsForMass-np),0);
+    TArrow lData(chi2*(nBinsForMass/2-np),toyhist.GetMaximum(),chi2*(nBinsForMass/2-np),0);
     lData.SetLineWidth(2);
     lData.Draw();
     std::cout << "\n saved canvas as: " << name.c_str() << std::endl;
@@ -312,11 +313,11 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooDataSet *data, std
     // back to best fit 	
     params->assignValueOnly(preParams);
   } else {
-    prob = TMath::Prob(chi2*(nBinsForMass-np),nBinsForMass-np);
+    prob = TMath::Prob(chi2*(nBinsForMass/2-np),nBinsForMass/2-np);
   }
   //std::cout << "nBins for mass:   " << nBinsForMass << std::endl;
   //std::cout << "number of params: " << np << std::endl;
-  std::cout << "[JOE] Chi2 in Observed =  " << chi2*(nBinsForMass-np) << std::endl;
+  std::cout << "[JOE] Chi2 in Observed =  " << chi2*(nBinsForMass/2-np) << std::endl;
   std::cout << "[JOE] p-value  =  " << prob << std::endl;
   delete pdf;
   return prob; //NOTE: this is actually GOF, not prob to do with comparing orders!! 
@@ -741,6 +742,7 @@ int main(int argc, char* argv[]){
 	functionClasses.push_back("Exponential");
 	functionClasses.push_back("PowerLaw");
 	functionClasses.push_back("Laurent");
+	functionClasses.push_back("BWSimple");
 	functionClasses.push_back("BWZ");
 	functionClasses.push_back("BWZRedux");
 	functionClasses.push_back("BWZGamma");
@@ -749,6 +751,7 @@ int main(int argc, char* argv[]){
 	namingMap.insert(pair<string,string>("Exponential","exp"));
 	namingMap.insert(pair<string,string>("PowerLaw","pow"));
 	namingMap.insert(pair<string,string>("Laurent","lau"));
+	namingMap.insert(pair<string,string>("BWSimple","bws"));
 	namingMap.insert(pair<string,string>("BWZ","bwz"));
 	namingMap.insert(pair<string,string>("BWZRedux","bwzredux"));
 	namingMap.insert(pair<string,string>("BWZGamma","bwzgam"));
@@ -971,7 +974,7 @@ int main(int argc, char* argv[]){
 							//if (gofProb > 0.01 || order == truthOrder ) {  // Good looking fit or one of our regular truth functions 
 							if (gofProb > 0.01) {  // Joe: removed requirement to have at least 1 function from each family
 							//if ((gofProb > 0.01) || (*funcType=="BWZ") || (*funcType=="BWZRedux")){  // Joe: removed requirement to have at least 1 function from each family, EXCEPT for BWs
-							//
+							
                                                                 std::unique_ptr<RooArgSet> vars(bkgPdf->getVariables());
                                                                 std::unique_ptr<RooAbsCollection> nonConstVars(vars->selectByAttrib("Constant", false));
 
@@ -981,6 +984,7 @@ int main(int argc, char* argv[]){
 								std::cout << "[INFO] Adding to Envelope " << bkgPdf->GetName() << " "<< gofProb 
 									<< " 2xNLL + c is " << myNll + (2*correctionFactor*nonConstVars->getSize()) <<  std::endl;
                                                                 std::cout << "\n";
+                                                                cout << "IN ENVELOPE GoF PROB (that function was a good fit at all):" << gofProb << endl;
 								allPdfs.insert(pair<string,RooAbsPdf*>(Form("%s%d",funcType->c_str(),order),bkgPdf));
 								storedPdfs.add(*bkgPdf);
 								pdforders.push_back(order);

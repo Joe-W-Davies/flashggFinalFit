@@ -15,7 +15,8 @@ sqrts__ = "13TeV"
 
 # Luminosity map in fb^-1
 #lumiMap = {'2016':35.92, '2017':41.53, '2018':59.74, 'combined':137.19}
-lumiMap = {'2016':36.33, '2017':41.48, '2018':59.35, 'combined':137.17}
+#lumiMap = {'2016':36.33, '2017':41.48, '2018':59.35, 'combined':137.17} #with RR missing data in 2018
+lumiMap = {'2016':36.33, '2017':41.48, '2018':59.83, 'combined':137.65} #UL doesn't hant this issue in 2018
 #lumiScaleFactor = 1000. # Converting from pb to fb
 lumiScaleFactor = 1. # Converting from pb to fb
 

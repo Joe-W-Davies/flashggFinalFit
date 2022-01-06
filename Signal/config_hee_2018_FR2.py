@@ -20,8 +20,8 @@ signalScriptCfg = {
   'smears':'', # separate nuisance per year
 
   # Job submission options
-  #'batch':'IC', # ['condor','SGE','IC','local']
-  'batch':'local', # ['condor','SGE','IC','local']
+  'batch':'IC', # ['condor','SGE','IC','local']
+  #'batch':'local', # ['condor','SGE','IC','local']
   'queue':'hep.q'
   #'batch':'condor', # ['condor','SGE','IC','local']
   #'queue':'espresso',

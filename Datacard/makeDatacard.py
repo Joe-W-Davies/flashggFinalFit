@@ -152,7 +152,8 @@ if opt.prune:
 if opt.saveDataFrame:
   print " .........................................................................................."
   print " --> Saving dataFrame: %s.pkl"%opt.output
-  with open(".%s.pkl"%opt.output,"wb") as fD: pickle.dump(data,fD)
+  data.to_pickle('%s.pkl'%opt.output)
+  #with open(".%s.pkl"%opt.output,"wb") as fD: pickle.dump(data,fD) #NOTE pretty sure this doesnt do anything
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # WRITE TO .TXT FILE

@@ -103,6 +103,11 @@ class FinalModel:
     self.useDCB = _useDCB
     self.doVoigtian = _doVoigtian
     if self.doVoigtian: self.GammaH = ROOT.RooRealVar("GammaH","GammaH",0.004,0.,5.)
+    #added for extra smearings
+    self.addSigmaScaling = True
+    if self.addSigmaScaling:
+      self.sigmaScaling = ROOT.RooRealVar("sigma_sf_%s"%self.name,"sigma_sf_%s"%self.name,1.,0.5,2.0)
+      self.sigmaScaling.setConstant(True)
     self.skipVertexScenarioSplit = _skipVertexScenarioSplit
     self.doEffAccFromJson = _doEffAccFromJson
     self.verbose = True
@@ -381,8 +386,14 @@ class FinalModel:
     sigmaName = sigmaSplineName
     # Build formula string and dependents list
     dependents = ROOT.RooArgList()
-    formula = "@0"
-    dependents.add(self.Splines[sigmaSplineName])
+    if self.addSigmaScaling:
+      dependents.add(self.Splines[sigmaSplineName])
+      formula = "@0*@1"
+      dependents.add(self.sigmaScaling)
+      dependents.add(self.Splines[sigmaSplineName])
+    else:
+      formula = "@0"
+      dependents.add(self.Splines[sigmaSplineName])
     if not skipSystematics:
       # Add systematics
       formula += "*TMath::Max(1.e-2,(1."

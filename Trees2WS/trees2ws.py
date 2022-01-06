@@ -110,7 +110,7 @@ theoryWeightColumns = {}
 for ts, nWeights in theoryWeightContainers.iteritems(): theoryWeightColumns[ts] = ["%s_%g"%(ts[:-1],i) for i in range(0,nWeights)] # drop final s from container name
 
 # If year == 2018, add HET
-#FIXME: add HEM back in when we have it dumped for 2018 signal
+#FIXME: add back in when you get it for 2018
 #if opt.year == '2018': systematics.append("JetHEM")
 
 
