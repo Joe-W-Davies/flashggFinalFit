@@ -24,6 +24,7 @@ def get_options():
   # For yield/systematics:
   parser.add_option('--skipCOWCorr', dest='skipCOWCorr', default=False, action="store_true", help="Skip centralObjectWeight correction for events in acceptance")
   parser.add_option('--doSystematics', dest='doSystematics', default=False, action="store_true", help="Include systematics calculations and add to datacard")
+  parser.add_option('--loadQCDScaleVariationDenominators', dest='loadQCDScaleVariationDenominators', default='', help="Path to json file storing QCD scale variation denominators")
   parser.add_option('--doMCStatUncertainty', dest='doMCStatUncertainty', default=False, action="store_true", help="Add uncertainty for MC stats")
   parser.add_option('--doSTXSMerging', dest='doSTXSMerging', default=False, action="store_true", help="Calculate additional migrations uncertainties for merged STXS bins (for 'mnorm' tier in systematics)")
   parser.add_option('--doSTXSScaleCorrelationScheme', dest='doSTXSScaleCorrelationScheme', default=False, action="store_true", help="Partially de-correlate scale uncertainties for different phase space regions")
@@ -89,8 +90,9 @@ if opt.doSystematics:
     if s['type'] == 'constant': data = addConstantSyst(data,s,opt)
   # Theory factory: group scale weights after calculation in relevant grouping scheme
   data = theorySystFactory(data, theory_systematics, theoryFactoryType, opt, stxsMergeScheme=STXSMergingScheme)
-  data, theory_systematics = groupSystematics(data, theory_systematics, opt, prefix="scaleWeight", groupings=[[1,2],[3,6],[4,8]], stxsMergeScheme=STXSMergingScheme)
-  data, theory_systematics = groupSystematics(data, theory_systematics, opt, prefix="alphaSWeight", groupings=[[0,1]], stxsMergeScheme=STXSMergingScheme)
+  data, theory_systematics = groupSystematics(data, theory_systematics, opt, prefix="qcd_scale_variation", groupings=[[0,8],[1,7],[3,5]], stxsMergeScheme=STXSMergingScheme)
+  #data, theory_systematics = groupSystematics(data, theory_systematics, opt, prefix="scaleWeight", groupings=[[1,2],[3,6],[4,8]], stxsMergeScheme=STXSMergingScheme)
+  #data, theory_systematics = groupSystematics(data, theory_systematics, opt, prefix="alphaSWeight", groupings=[[0,1]], stxsMergeScheme=STXSMergingScheme)
 
   # Rename systematics
   for s in theory_systematics: s['title'] = renameSyst(s['title'],"scaleWeight","scale")

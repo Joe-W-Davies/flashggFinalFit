@@ -5,7 +5,7 @@ _year = '2018'
 signalScriptCfg = {
   
   # Setup
-  'inputWSDir':'/vols/cms/jwd18/Hee/finalFits/CMSSW_10_2_13/src/flashggFinalFit/Signal/FullRun2/signal_2018',
+  'inputWSDir':'/vols/cms/jwd18/Hee/finalFits/CMSSW_10_2_13/src/flashggFinalFit/Signal/FullRun2/signal_2017',
   'procs':'auto', # if auto: inferred automatically from filenames
   'cats':'auto', # if auto: inferred automatically from (0) workspace
   'ext':'hee_%s'%_year,
@@ -14,14 +14,13 @@ signalScriptCfg = {
   'massPoints':'125',
 
   #Photon !shape! systematics
-  'scales':'ElPtScale', # separate nuisance per year
+  'scales':'NonLinearity,EBHighR9ElPtScale,EBLowR9ElPtScale,EEHighR9ElPtScale,EELowR9ElPtScale', # separate nuisance per year
   'scalesCorr':'', # correlated across years
-  'scalesGlobal':'NonLinearity,Geant4', # affect all processes equally, correlated across years
+  'scalesGlobal':'Geant4', # affect all processes equally, correlated across years
   'smears':'', # separate nuisance per year
 
   # Job submission options
   'batch':'IC', # ['condor','SGE','IC','local']
-  #'batch':'local', # ['condor','SGE','IC','local']
   'queue':'hep.q'
   #'batch':'condor', # ['condor','SGE','IC','local']
   #'queue':'espresso',

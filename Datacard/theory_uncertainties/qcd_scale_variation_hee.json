@@ -1,0 +1,35 @@
+{
+  "GG2H":{
+    "qcd_scale_variation_0":1.16534,
+    "qcd_scale_variation_1":1.19906,
+    "qcd_scale_variation_2":1.23201,
+    "qcd_scale_variation_3":0.97216,
+    "qcd_scale_variation_4":1.00000,
+    "qcd_scale_variation_5":1.02485,
+    "qcd_scale_variation_6":0.81382,
+    "qcd_scale_variation_7":0.83759,
+    "qcd_scale_variation_8":0.85746
+  },
+  "VBF":{
+    "qcd_scale_variation_0":0.99430,
+    "qcd_scale_variation_1":0.99938,
+    "qcd_scale_variation_2":1.00894,
+    "qcd_scale_variation_3":0.99711,
+    "qcd_scale_variation_4":1.00000,
+    "qcd_scale_variation_5":1.00672,
+    "qcd_scale_variation_6":0.99931,
+    "qcd_scale_variation_7":1.00040,
+    "qcd_scale_variation_8":1.00478
+  },
+  "TTH":{
+    "qcd_scale_variation_0":0.98000,
+    "qcd_scale_variation_1":1.01028,
+    "qcd_scale_variation_2":1.03740,
+    "qcd_scale_variation_3":1.00844,
+    "qcd_scale_variation_4":1.00000,
+    "qcd_scale_variation_5":0.99387,
+    "qcd_scale_variation_6":0.96283,
+    "qcd_scale_variation_7":0.93580,
+    "qcd_scale_variation_8":0.91360
+  }
+}
