@@ -8,6 +8,7 @@ import ROOT
 import pandas as pd
 import glob
 import pickle
+import json
 from collections import OrderedDict as od
 from systematics import theory_systematics, experimental_systematics, signal_shape_systematics
 
@@ -22,6 +23,7 @@ def get_options():
   parser.add_option('--mass', dest='mass', default='125', help="MH mass: required for doTrueYield")
   parser.add_option('--analysis', dest='analysis', default='STXS', help="Analysis extension: required for doTrueYield (see ./tools/XSBR.py for example)")
   # For yield/systematics:
+  parser.add_option('--addHeeUEPS', dest='addHeeUEPS', default=False, action="store_true", help='Add UEPS uncertainties for Hee') 
   parser.add_option('--skipCOWCorr', dest='skipCOWCorr', default=False, action="store_true", help="Skip centralObjectWeight correction for events in acceptance")
   parser.add_option('--doSystematics', dest='doSystematics', default=False, action="store_true", help="Include systematics calculations and add to datacard")
   parser.add_option('--loadQCDScaleVariationDenominators', dest='loadQCDScaleVariationDenominators', default='', help="Path to json file storing QCD scale variation denominators")
@@ -96,6 +98,32 @@ if opt.doSystematics:
 
   # Rename systematics
   for s in theory_systematics: s['title'] = renameSyst(s['title'],"scaleWeight","scale")
+
+  if opt.addHeeUEPS:
+
+    with open("theory_uncertainties/ueps_hee.json","rb") as jf: ueps = json.load(jf)
+
+    data['UnderlyingEvent_norm'] = '-'
+    ue = {'tiers': ['norm'], 'name': 'UnderlyingEvent', 'title': 'UnderlyingEvent', 'prior': 'lnN', 'correlateAcrossYears': 1, 'type': 'factory'}
+    theory_systematics.append(ue)
+
+    data['PartonShower_norm'] = '-'
+    ps = {'tiers': ['norm'], 'name': 'PartonShower', 'title': 'PartonShower', 'prior': 'lnN', 'correlateAcrossYears': 1, 'type': 'factory'}
+    theory_systematics.append(ps)
+
+
+    for ir,r in data[data['type']=='sig'].iterrows():
+      proc = r['proc'].split("_")[0]
+      if proc == "qqH": proc == "VBF"
+      cat = r['cat']
+      if "ggh" in cat: cat = "ggH"
+      elif "vbf" in cat: cat = "VBF"
+      x = ueps['ue'][proc][cat]      
+      y = ueps['ps'][proc][cat]      
+      data.at[ir,'UnderlyingEvent_norm'] = x
+      data.at[ir,'PartonShower_norm'] = y
+      
+    
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
