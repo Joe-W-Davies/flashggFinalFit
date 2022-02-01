@@ -14,9 +14,9 @@ signalScriptCfg = {
   'massPoints':'125',
 
   #Photon !shape! systematics
-  'scales':'ElPtScale', # separate nuisance per year
+  'scales':'NonLinearity,EBHighR9ElPtScale,EBLowR9ElPtScale,EEHighR9ElPtScale,EELowR9ElPtScale', # separate nuisance per year
   'scalesCorr':'', # correlated across years
-  'scalesGlobal':'NonLinearity,Geant4', # affect all processes equally, correlated across years
+  'scalesGlobal':'Geant4', # affect all processes equally, correlated across years
   'smears':'', # separate nuisance per year
 
   # Job submission options

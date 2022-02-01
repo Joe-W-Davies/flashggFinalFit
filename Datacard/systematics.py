@@ -67,18 +67,27 @@ theory_systematics = [
                 #####{'name':'alphaS_tHW','title':'alphaS_tHW','type':'constant','prior':'lnN','correlateAcrossYears':1,'value':'theory_uncertainties/thu_thw.json'},
 
                 # Shape uncertainties: enter direct XS measurements
-                # Scale weights are grouped: [1,2], [3,6], [4,8]
-                #{'name':'scaleWeight_0','title':'CMS_hgg_scaleWeight_0','type':'factory','prior':'lnN','correlateAcrossYears':1}, # nominal weight
-                #{'name':'scaleWeight_1','title':'CMS_hgg_scaleWeight_1','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape','mnorm']},
-                #{'name':'scaleWeight_2','title':'CMS_hgg_scaleWeight_2','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape','mnorm']},
-                #{'name':'scaleWeight_3','title':'CMS_hgg_scaleWeight_3','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape','mnorm']},
-                #############{'name':'scaleWeight_4','title':'CMS_hgg_scaleWeight_4','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape','mnorm']},
-                #{'name':'scaleWeight_5','title':'CMS_hgg_scaleWeight_5','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['norm','shape']}, #Unphysical
-                #{'name':'scaleWeight_6','title':'CMS_hgg_scaleWeight_6','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape','mnorm']},
-                #{'name':'scaleWeight_7','title':'CMS_hgg_scaleWeight_7','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['norm','shape']}, #Unphysical
-                #############{'name':'scaleWeight_8','title':'CMS_hgg_scaleWeight_8','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape','mnorm']},
-                #############{'name':'alphaSWeight_0','title':'CMS_hgg_alphaSWeight_0','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
-                #############{'name':'alphaSWeight_1','title':'CMS_hgg_alphaSWeight_1','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
+                # Scale weights are grouped: [0,8], [1,7], [3,5]
+                {'name':'qcd_scale_variation_0','title':'CMS_hee_qcd_scale_variation_0','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
+                {'name':'qcd_scale_variation_1','title':'CMS_hee_qcd_scale_variation_1','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
+                #{'name':'qcd_scale_variation_2','title':'CMS_hee_qcd_scale_variation_2','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','mnorm']}, #Unphysical
+                {'name':'qcd_scale_variation_3','title':'CMS_hee_qcd_scale_variation_3','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
+                #############{'name':'qcd_scale_variation_4','title':'CMS_hee_qcd_scale_variation_4','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','mnorm']}, # No variation
+                {'name':'qcd_scale_variation_5','title':'CMS_hee_qcd_scale_variation_5','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']}, 
+                #{'name':'qcd_scale_variation_6','title':'CMS_hee_qcd_scale_variation_6','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','mnorm']}, #Unphysical
+                {'name':'qcd_scale_variation_7','title':'CMS_hee_qcd_scale_variation_7','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
+                {'name':'qcd_scale_variation_8','title':'CMS_hee_qcd_scale_variation_8','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
+                #{'name':'qcd_scale_variation_0','title':'CMS_hee_qcd_scale_variation_0','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','shape']},
+                #{'name':'qcd_scale_variation_1','title':'CMS_hee_qcd_scale_variation_1','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','shape']},
+                #{'name':'qcd_scale_variation_2','title':'CMS_hee_qcd_scale_variation_2','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','mnorm']}, #Unphysical
+                #{'name':'qcd_scale_variation_3','title':'CMS_hee_qcd_scale_variation_3','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','shape']},
+                #############{'name':'qcd_scale_variation_4','title':'CMS_hee_qcd_scale_variation_4','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','mnorm']}, # No variation
+                #{'name':'qcd_scale_variation_5','title':'CMS_hee_qcd_scale_variation_5','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','shape']}, 
+                #{'name':'qcd_scale_variation_6','title':'CMS_hee_qcd_scale_variation_6','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','mnorm']}, #Unphysical
+                #{'name':'qcd_scale_variation_7','title':'CMS_hee_qcd_scale_variation_7','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','shape']},
+                #{'name':'qcd_scale_variation_8','title':'CMS_hee_qcd_scale_variation_8','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape_renorm','shape']},
+                #############{'name':'alphaSWeight_0','title':'CMS_hee_alphaSWeight_0','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
+                #############{'name':'alphaSWeight_1','title':'CMS_hee_alphaSWeight_1','type':'factory','prior':'lnN','correlateAcrossYears':1,'tiers':['shape']},
 
                 # Theory uncertainties for constrained to SM bins
                 #{'name':'THU_qqH_Yield_qqH_cnstr','title':'THU_qqH_Yield_qqH_cnstr','type':'constant','prior':'lnN','correlateAcrossYears':1,'value':'theory_uncertainties/thu_qqh_stxs_constrain.json'},
@@ -157,13 +166,15 @@ experimental_systematics = [
 signal_shape_systematics = [
                 #{'name':'deltafracright','title':'deltafracright','type':'signal_shape','mode':'other','mean':'0.0','sigma':'0.02'},
                 #{'name':'NonLinearity','title':'NonLinearity','type':'signal_shape','mode':'scalesGlobal','mean':'0.0','sigma':'0.002'},
-                {'name':'NonLinearity','title':'NonLinearity','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'}, #now a shape variable
+                #{'name':'NonLinearity','title':'NonLinearity','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'}, #now a shape variable
                 {'name':'Geant4','title':'Geant4','type':'signal_shape','mode':'scalesGlobal','mean':'0.0','sigma':'0.0005'},
-                {'name':'ElPtScale','title':'ElPtScale','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'}
-                #{'name':'HighR9EB','title':'HighR9EB','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
-                #{'name':'HighR9EE','title':'HighR9EE','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
-                #{'name':'LowR9EB','title':'LowR9EB','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
-                #{'name':'LowR9EE','title':'LowR9EE','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
+                #{'name':'ElPtScale','title':'ElPtScale','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'}
+                # FIXME: updates signal shape systematics here, check!
+                {'name':'NonLinearity','title':'NonLinearity','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
+                {'name':'EBHighR9ElPtScale','title':'EBHighR9ElPtScale','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
+                {'name':'EEHighR9ElPtScale','title':'EEHighR9ElPtScale','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
+                {'name':'EBLowR9ElPtScale','title':'EBLowR9ElPtScale','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
+                {'name':'EELowR9ElPtScale','title':'EELowR9ElPtScale','type':'signal_shape','mode':'scales','mean':'0.0','sigma':'1.0'},
                 #{'name':'ShowerShapeHighR9EB','title':'ShowerShapeHighR9EB','type':'signal_shape','mode':'scalesCorr','mean':'0.0','sigma':'1.0'},
                 #{'name':'ShowerShapeHighR9EE','title':'ShowerShapeHighR9EE','type':'signal_shape','mode':'scalesCorr','mean':'0.0','sigma':'1.0'},
                 #{'name':'ShowerShapeLowR9EB','title':'ShowerShapeLowR9EB','type':'signal_shape','mode':'scalesCorr','mean':'0.0','sigma':'1.0'},

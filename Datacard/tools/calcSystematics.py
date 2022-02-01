@@ -264,6 +264,11 @@ def theorySystFactory(d,systs,ftype,options,stxsMergeScheme=None,_removal=False)
 
   # For process yields: sum central object weight corrected (remove experimental effects)
   corrExt = "_COWCorr" if not options.skipCOWCorr else ''
+
+  if options.loadQCDScaleVariationDenominators != '':
+    with open(options.loadQCDScaleVariationDenominators,"r") as fj: denominators = json.load(fj)
+  else:
+    denominators = None
    
   # Calculate the per-production mode (per-year) yield variation: add as column in dataFrame
   for proc_s0 in d[d['type']=='sig'].proc_s0.unique():
@@ -331,7 +336,7 @@ def theorySystFactory(d,systs,ftype,options,stxsMergeScheme=None,_removal=False)
     # Loop over tiers and use appropriate mode for compareYield function: skip mnorm as treated separately below
     for tier in s['tiers']: 
       if tier == 'mnorm': continue
-      d.loc[mask,"%s_%s"%(s['name'],tier)] = d[mask].apply(lambda x: compareYield(x,f,s['name'],mode=tier), axis=1)
+      d.loc[mask,"%s_%s"%(s['name'],tier)] = d[mask].apply(lambda x: compareYield(x,f,s['name'],mode=tier,den=denominators), axis=1)
 
   # For merging STXS bins in parameter scheme: calculate mnorm systematics (merged-STXS-normalisation)
   # One nuisance per merge
@@ -372,7 +377,7 @@ def theorySystFactory(d,systs,ftype,options,stxsMergeScheme=None,_removal=False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Function for extracting systematic factors:
 #   * mode == treatment of theory systematic  
-def compareYield(row,factoryType,sname,mode='default',mname=None):
+def compareYield(row,factoryType,sname,mode='default',mname=None,den=None):
 
   # Catch: if any yields in denominators are zero: return 1
   if row['nominal_yield']==0:
@@ -405,6 +410,18 @@ def compareYield(row,factoryType,sname,mode='default',mname=None):
     else:
       shape = (row["%s_yield"%sname]/row['nominal_yield'])/(row["proc_%s_yield"%sname]/row["proc_nominal_yield"])
       return [shape]
+
+  elif mode=='shape_renorm':
+    if factoryType in ["a_w","a_h"]: 
+      D_up = den[row['procOriginal']]['%s_up'%sname]
+      D_down = den[row['procOriginal']]['%s_down'%sname]
+      shape_renorm_up = (row["%s_up_yield"%sname]/row['nominal_yield'])/D_up
+      shape_renorm_down = (row["%s_down_yield"%sname]/row['nominal_yield'])/D_down
+      return [shape_down,shape_up]
+    else:
+      D = den[row['procOriginal']][sname]
+      shape_renorm = (row["%s_yield"%sname]/row['nominal_yield'])/D
+      return [shape_renorm]
 
   elif mode == 'norm':
     if factoryType in ["a_w","a_h"]:
